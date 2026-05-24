@@ -90,3 +90,38 @@ body {
 #reader img {
   display: none;
 }
+
+/* Select box */
+select {
+  color: #1e293b;
+  background-color: #ffffff;
+}
+
+/* Dropdown options */
+select option {
+  color: #1e293b;
+  background-color: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  select {
+    color: #f1f5f9;
+    background-color: #1e1e1e;
+  }
+
+  select option {
+    color: #f1f5f9;
+    background-color: #1e1e1e;
+  }
+}
+
+/* Tailwind dark mode */
+.dark select {
+  color: #f1f5f9;
+  background-color: #1e1e1e;
+}
+
+.dark select option {
+  color: #f1f5f9;
+  background-color: #1e1e1e;
+}
