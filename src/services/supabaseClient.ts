@@ -55,6 +55,12 @@ export function getSupabaseClient(): SupabaseClient | null {
     return cachedClient;
   }
 
+  // Safety check to prevent unhandled url scheme exceptions
+  if (!config.url || (!config.url.startsWith('http://') && !config.url.startsWith('https://'))) {
+    console.warn('SHMS database: Invalid Supabase URL schema configured.');
+    return null;
+  }
+
   try {
     cachedClient = createClient(config.url, config.anonKey, {
       auth: {
