@@ -1,4 +1,4 @@
-import { getSupabaseClient } from './supabaseClient';
+import { getSupabaseClient, getSupabaseConfig } from './supabaseClient';
 import { 
   Profile, Hostel, Room, Allocation, Attendance, 
   Complaint, Visitor, Fee, MessMenu, MessFeedback, Notification, UserRole 
@@ -59,7 +59,7 @@ export interface IDatabaseService {
 // -------------------------------------------------------------
 // LOCAL SEED DATA
 // -------------------------------------------------------------
-const SEED_PROFILES: Profile[] = [
+export const SEED_PROFILES: Profile[] = [
   { id: 'usr_student1', name: 'Rahul Sharma', email: 'student@hostel.com', role: 'student', gender: 'male', phone: '9876543210', created_at: new Date().toISOString() },
   { id: 'usr_student2', name: 'Sneha Reddy', email: 'student2@hostel.com', role: 'student', gender: 'female', phone: '9876543211', created_at: new Date().toISOString() },
   { id: 'usr_admin', name: 'Alok Gupta (Admin)', email: 'admin@hostel.com', role: 'admin', gender: 'male', phone: '9876543212', created_at: new Date().toISOString() },
@@ -68,42 +68,42 @@ const SEED_PROFILES: Profile[] = [
   { id: 'usr_mess', name: 'Chef Ramesh Chandra', email: 'mess@hostel.com', role: 'mess_manager', gender: 'male', phone: '9876543215', created_at: new Date().toISOString() },
 ];
 
-const SEED_HOSTELS: Hostel[] = [
+export const SEED_HOSTELS: Hostel[] = [
   { id: 'hostel_boys_a', name: 'Boys Hostel - Block A', type: 'boys', location: 'North Campus', created_at: new Date().toISOString() },
   { id: 'hostel_girls_b', name: 'Girls Hostel - Block B', type: 'girls', location: 'South Campus', created_at: new Date().toISOString() },
 ];
 
-const SEED_ROOMS: Room[] = [
+export const SEED_ROOMS: Room[] = [
   { id: 'room_101', hostel_id: 'hostel_boys_a', room_number: '101', floor: 1, capacity: 3, occupied: 1, created_at: new Date().toISOString() },
   { id: 'room_102', hostel_id: 'hostel_boys_a', room_number: '102', floor: 1, capacity: 3, occupied: 0, created_at: new Date().toISOString() },
   { id: 'room_201', hostel_id: 'hostel_girls_b', room_number: '201', floor: 2, capacity: 2, occupied: 1, created_at: new Date().toISOString() },
 ];
 
-const SEED_ALLOCATIONS: Allocation[] = [
+export const SEED_ALLOCATIONS: Allocation[] = [
   { id: 'alloc_1', student_id: 'usr_student1', room_id: 'room_101', assigned_at: new Date().toISOString(), status: 'active' },
   { id: 'alloc_2', student_id: 'usr_student2', room_id: 'room_201', assigned_at: new Date().toISOString(), status: 'active' },
 ];
 
-const SEED_ATTENDANCE: Attendance[] = [
+export const SEED_ATTENDANCE: Attendance[] = [
   { id: 'att_1', student_id: 'usr_student1', date: new Date().toISOString().split('T')[0], status: 'present', check_in: new Date().toISOString() },
   { id: 'att_2', student_id: 'usr_student2', date: new Date().toISOString().split('T')[0], status: 'late', check_in: new Date().toISOString() },
 ];
 
-const SEED_COMPLAINTS: Complaint[] = [
+export const SEED_COMPLAINTS: Complaint[] = [
   { id: 'comp_1', student_id: 'usr_student1', category: 'Plumbing', description: 'Leaking tap in room bathroom.', status: 'pending', created_at: new Date().toISOString() },
   { id: 'comp_2', student_id: 'usr_student2', category: 'Electrical', description: 'Fan making loud noise and rotating slowly.', status: 'in_progress', assigned_to: 'usr_warden', created_at: new Date().toISOString() },
 ];
 
-const SEED_VISITORS: Visitor[] = [
+export const SEED_VISITORS: Visitor[] = [
   { id: 'vis_1', visitor_name: 'Suresh Sharma', phone: '9888888888', student_id: 'usr_student1', purpose: 'Father visiting', entry_time: new Date().toISOString(), status: 'approved', created_at: new Date().toISOString() },
 ];
 
-const SEED_FEES: Fee[] = [
+export const SEED_FEES: Fee[] = [
   { id: 'fee_1', student_id: 'usr_student1', amount: 25000, due_date: '2026-06-30', payment_status: 'unpaid', created_at: new Date().toISOString() },
   { id: 'fee_2', student_id: 'usr_student2', amount: 25000, due_date: '2026-05-15', payment_status: 'paid', paid_at: new Date().toISOString(), receipt_url: '#', created_at: new Date().toISOString() },
 ];
 
-const SEED_MESS_MENU: MessMenu[] = [
+export const SEED_MESS_MENU: MessMenu[] = [
   { id: 'menu_1', day_of_week: 'Monday', breakfast: 'Idli, Sambar, Tea', lunch: 'Rice, Dal, Veg Kadhai, Curd', dinner: 'Roti, Paneer Masala, Kheer', created_at: new Date().toISOString() },
   { id: 'menu_2', day_of_week: 'Tuesday', breakfast: 'Poha, Sprouts, Milk', lunch: 'Rice, Rajma, Aloo Gobhi, Salad', dinner: 'Roti, Mix Veg Sabzi, Custard', created_at: new Date().toISOString() },
   { id: 'menu_3', day_of_week: 'Wednesday', breakfast: 'Aloo Paratha, Curd', lunch: 'Jeera Rice, Chole, Raita', dinner: 'Veg Biryani, Salan, Ice Cream', created_at: new Date().toISOString() },
@@ -113,12 +113,12 @@ const SEED_MESS_MENU: MessMenu[] = [
   { id: 'menu_7', day_of_week: 'Sunday', breakfast: 'Sandwich, Cornflakes, Coffee', lunch: 'Veg Pulav, Shahi Paneer, Raita', dinner: 'Butter Naan, Kadai Chicken/Veg, Sweet', created_at: new Date().toISOString() },
 ];
 
-const SEED_MESS_FEEDBACK: MessFeedback[] = [
+export const SEED_MESS_FEEDBACK: MessFeedback[] = [
   { id: 'fb_1', student_id: 'usr_student1', meal_type: 'breakfast', rating: 4, comment: 'Nice hot idlis!', date: new Date().toISOString().split('T')[0], created_at: new Date().toISOString() },
   { id: 'fb_2', student_id: 'usr_student2', meal_type: 'lunch', rating: 3, comment: 'Rajma was a bit salty.', date: new Date().toISOString().split('T')[0], created_at: new Date().toISOString() },
 ];
 
-const SEED_NOTIFICATIONS: Notification[] = [
+export const SEED_NOTIFICATIONS: Notification[] = [
   { id: 'not_1', user_id: 'usr_student1', title: 'Visitor Arrived', message: 'Your father Suresh Sharma is at the main gate. Please approve entry.', type: 'visitor', is_read: false, created_at: new Date().toISOString() },
   { id: 'not_2', user_id: 'usr_student1', title: 'Fees Due', message: 'Hostel fee of Rs. 25000 is due by June 30.', type: 'fee', is_read: false, created_at: new Date().toISOString() },
   { id: 'not_3', user_id: 'usr_student2', title: 'Complaint Assigned', message: 'Warden has assigned electrical team to fix your room fan.', type: 'complaint', is_read: false, created_at: new Date().toISOString() },
@@ -1287,16 +1287,292 @@ class SupabaseAdapter implements IDatabaseService {
   }
 }
 
+// -------------------------------------------------------------
+// NEXT.JS API BACKEND ADAPTER
+// -------------------------------------------------------------
+export class ApiAdapter implements IDatabaseService {
+  isSupabaseActive(): boolean {
+    return true; // Routed through the API Server (which can connect to Supabase)
+  }
+
+  private async fetchApi<T>(path: string, options: { method?: string; body?: any; query?: { [key: string]: string | undefined } } = {}): Promise<T> {
+    const config = getSupabaseConfig();
+    const url = `/api/${path}`;
+    
+    const headers: { [key: string]: string } = {
+      'Content-Type': 'application/json'
+    };
+
+    if (config) {
+      headers['x-supabase-url'] = config.url;
+      headers['x-supabase-anon-key'] = config.anonKey;
+    }
+
+    if (typeof window !== 'undefined') {
+      const userId = localStorage.getItem('shms_current_user_id') || '';
+      if (userId) {
+        headers['x-user-id'] = userId;
+      }
+    }
+
+    const fetchOptions: RequestInit = {
+      method: options.method || 'GET',
+      headers
+    };
+
+    if (options.body) {
+      fetchOptions.body = JSON.stringify(options.body);
+    }
+
+    let targetUrl = url;
+    if (options.query) {
+      const qParams = new URLSearchParams();
+      Object.keys(options.query).forEach(k => {
+        const val = options.query![k];
+        if (val !== undefined) {
+          qParams.append(k, val);
+        }
+      });
+      const qStr = qParams.toString();
+      if (qStr) {
+        targetUrl += '?' + qStr;
+      }
+    }
+
+    const res = await fetch(targetUrl, fetchOptions);
+    if (!res.ok) {
+      let errMsg = 'API Error';
+      try {
+        const errJson = await res.json();
+        errMsg = errJson.error || errMsg;
+      } catch (err) {
+        try {
+          errMsg = await res.text() || errMsg;
+        } catch (_) {}
+      }
+      throw new Error(errMsg);
+    }
+
+    return res.json() as Promise<T>;
+  }
+
+  // Auth Operations
+  async login(email: string, role: UserRole): Promise<{ success: boolean; user?: Profile; message?: string }> {
+    return this.fetchApi<{ success: boolean; user?: Profile; message?: string }>('auth/login', {
+      method: 'POST',
+      body: { email, role }
+    });
+  }
+
+  async register(email: string, name: string, role: UserRole, phone?: string, gender?: 'male' | 'female'): Promise<{ success: boolean; user?: Profile; message?: string }> {
+    return this.fetchApi<{ success: boolean; user?: Profile; message?: string }>('auth/register', {
+      method: 'POST',
+      body: { email, name, role, phone, gender }
+    });
+  }
+
+  async getCurrentUser(): Promise<Profile | null> {
+    if (typeof window === 'undefined') return null;
+    const userId = localStorage.getItem('shms_current_user_id');
+    if (!userId) return null;
+    return this.fetchApi<Profile | null>('auth/me', {
+      method: 'GET'
+    });
+  }
+
+  async signOut(): Promise<void> {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('shms_current_user_id');
+    }
+  }
+
+  // Hostels & Rooms
+  async getHostels(): Promise<Hostel[]> {
+    return this.fetchApi<Hostel[]>('hostels');
+  }
+
+  async addHostel(name: string, location?: string, type?: 'boys' | 'girls'): Promise<Hostel> {
+    return this.fetchApi<Hostel>('hostels', {
+      method: 'POST',
+      body: { name, location, type }
+    });
+  }
+
+  async getRooms(hostelId?: string): Promise<Room[]> {
+    return this.fetchApi<Room[]>('rooms', {
+      query: { hostelId }
+    });
+  }
+
+  async addRoom(hostelId: string, roomNumber: string, floor: number, capacity: number): Promise<Room> {
+    return this.fetchApi<Room>('rooms', {
+      method: 'POST',
+      body: { hostelId, roomNumber, floor, capacity }
+    });
+  }
+
+  async updateRoom(roomId: string, updates: Partial<Room>): Promise<Room> {
+    return this.fetchApi<Room>('rooms', {
+      method: 'PATCH',
+      body: { roomId, updates }
+    });
+  }
+
+  // Allocations
+  async getAllocations(): Promise<Allocation[]> {
+    return this.fetchApi<Allocation[]>('allocations');
+  }
+
+  async allocateRoom(studentId: string, roomId: string): Promise<Allocation> {
+    return this.fetchApi<Allocation>('allocations', {
+      method: 'POST',
+      body: { studentId, roomId }
+    });
+  }
+
+  async vacateRoom(allocationId: string): Promise<boolean> {
+    const res = await this.fetchApi<{ success: boolean }>('allocations', {
+      method: 'DELETE',
+      query: { allocationId }
+    });
+    return res.success;
+  }
+
+  // Attendance
+  async recordAttendance(studentId: string, status: 'present' | 'absent' | 'late', checkIn?: string, checkOut?: string): Promise<Attendance> {
+    return this.fetchApi<Attendance>('attendance', {
+      method: 'POST',
+      body: { studentId, status, checkIn, checkOut }
+    });
+  }
+
+  async getAttendance(studentId?: string, date?: string): Promise<Attendance[]> {
+    return this.fetchApi<Attendance[]>('attendance', {
+      query: { studentId, date }
+    });
+  }
+
+  // Complaints
+  async getComplaints(studentId?: string, assignedTo?: string): Promise<Complaint[]> {
+    return this.fetchApi<Complaint[]>('complaints', {
+      query: { studentId, assignedTo }
+    });
+  }
+
+  async addComplaint(studentId: string, category: string, description: string): Promise<Complaint> {
+    return this.fetchApi<Complaint>('complaints', {
+      method: 'POST',
+      body: { studentId, category, description }
+    });
+  }
+
+  async updateComplaintStatus(complaintId: string, status: Complaint['status'], assignedTo?: string, resolvedAt?: string): Promise<Complaint> {
+    return this.fetchApi<Complaint>('complaints', {
+      method: 'PATCH',
+      body: { complaintId, status, assignedTo, resolvedAt }
+    });
+  }
+
+  // Visitors
+  async getVisitors(studentId?: string): Promise<Visitor[]> {
+    return this.fetchApi<Visitor[]>('visitors', {
+      query: { studentId }
+    });
+  }
+
+  async addVisitor(visitorName: string, phone: string, studentId: string, purpose?: string): Promise<Visitor> {
+    return this.fetchApi<Visitor>('visitors', {
+      method: 'POST',
+      body: { visitorName, phone, studentId, purpose }
+    });
+  }
+
+  async updateVisitorStatus(visitorId: string, status: Visitor['status'], entryTime?: string, exitTime?: string): Promise<Visitor> {
+    return this.fetchApi<Visitor>('visitors', {
+      method: 'PATCH',
+      body: { visitorId, status, entryTime, exitTime }
+    });
+  }
+
+  // Fees
+  async getFees(studentId?: string): Promise<Fee[]> {
+    return this.fetchApi<Fee[]>('fees', {
+      query: { studentId }
+    });
+  }
+
+  async addFee(studentId: string, amount: number, dueDate: string): Promise<Fee> {
+    return this.fetchApi<Fee>('fees', {
+      method: 'POST',
+      body: { studentId, amount, dueDate }
+    });
+  }
+
+  async payFee(feeId: string): Promise<Fee> {
+    return this.fetchApi<Fee>('fees', {
+      method: 'PATCH',
+      body: { feeId }
+    });
+  }
+
+  // Mess Menu & Feedback
+  async getMessMenu(): Promise<MessMenu[]> {
+    return this.fetchApi<MessMenu[]>('mess/menu');
+  }
+
+  async updateMessMenu(dayOfWeek: string, breakfast: string, lunch: string, dinner: string): Promise<MessMenu> {
+    return this.fetchApi<MessMenu>('mess/menu', {
+      method: 'POST',
+      body: { dayOfWeek, breakfast, lunch, dinner }
+    });
+  }
+
+  async getMessFeedback(mealType?: string, date?: string): Promise<MessFeedback[]> {
+    return this.fetchApi<MessFeedback[]>('mess/feedback', {
+      query: { mealType, date }
+    });
+  }
+
+  async addMessFeedback(studentId: string, mealType: 'breakfast' | 'lunch' | 'dinner', rating: number, comment?: string): Promise<MessFeedback> {
+    return this.fetchApi<MessFeedback>('mess/feedback', {
+      method: 'POST',
+      body: { studentId, mealType, rating, comment }
+    });
+  }
+
+  // Notifications
+  async getNotifications(userId: string): Promise<Notification[]> {
+    return this.fetchApi<Notification[]>('notifications', {
+      query: { userId }
+    });
+  }
+
+  async addNotification(userId: string, title: string, message: string, type: Notification['type']): Promise<Notification> {
+    return this.fetchApi<Notification>('notifications', {
+      method: 'POST',
+      body: { userId, title, message, type }
+    });
+  }
+
+  async markNotificationAsRead(notificationId: string): Promise<boolean> {
+    const res = await this.fetchApi<{ success: boolean }>('notifications', {
+      method: 'PATCH',
+      body: { notificationId }
+    });
+    return res.success;
+  }
+}
+
 // Resolver singleton
 let activeDbService: IDatabaseService | null = null;
 
 export function getDbService(): IDatabaseService {
   if (activeDbService) return activeDbService;
 
-  const client = getSupabaseClient();
-  if (client) {
-    console.log('SHMS database: Connected to Supabase');
-    activeDbService = new SupabaseAdapter();
+  const config = getSupabaseConfig();
+  if (config) {
+    console.log('SHMS database: Connected to API Backend (Supabase Mode)');
+    activeDbService = new ApiAdapter();
   } else {
     console.log('SHMS database: Running in LocalStorage fallback mode');
     activeDbService = new LocalStorageAdapter();
