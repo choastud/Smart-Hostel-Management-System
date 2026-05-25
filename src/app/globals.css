@@ -8,6 +8,7 @@
   --color-brand-blue: #3B82F6;
   --color-brand-blue-hover: #2563EB;
   --color-brand-blue-light: #EBF3FF;
+  --color-zinc-850: #1e1e21;
 }
 
 :root {
@@ -93,35 +94,35 @@ body {
 
 /* Select box */
 select {
-  color: #1e293b;
-  background-color: #ffffff;
+  color: #1e293b !important;
+  background-color: #ffffff !important;
 }
 
 /* Dropdown options */
 select option {
-  color: #1e293b;
-  background-color: #ffffff;
+  color: #1e293b !important;
+  background-color: #ffffff !important;
 }
 
 @media (prefers-color-scheme: dark) {
   select {
-    color: #f1f5f9;
-    background-color: #1e1e1e;
+    color: #f1f5f9 !important;
+    background-color: #1e1e21 !important;
   }
 
   select option {
-    color: #f1f5f9;
-    background-color: #1e1e1e;
+    color: #f1f5f9 !important;
+    background-color: #1e1e21 !important;
   }
 }
 
 /* Tailwind dark mode */
 .dark select {
-  color: #f1f5f9;
-  background-color: #1e1e1e;
+  color: #f1f5f9 !important;
+  background-color: #1e1e21 !important;
 }
 
 .dark select option {
-  color: #f1f5f9;
-  background-color: #1e1e1e;
+  color: #f1f5f9 !important;
+  background-color: #1e1e21 !important;
 }
