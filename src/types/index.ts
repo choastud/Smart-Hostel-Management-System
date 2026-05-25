@@ -5,6 +5,7 @@ export interface Profile {
   name: string;
   email: string;
   role: UserRole;
+  gender?: 'male' | 'female';
   phone?: string;
   created_at: string;
 }
@@ -12,6 +13,7 @@ export interface Profile {
 export interface Hostel {
   id: string;
   name: string;
+  type: 'boys' | 'girls';
   location?: string;
   created_at: string;
 }

@@ -20,6 +20,7 @@ export default function RoomsPage() {
   // Forms states
   const [newHostelName, setNewHostelName] = useState('');
   const [newHostelLoc, setNewHostelLoc] = useState('');
+  const [newHostelType, setNewHostelType] = useState<'boys' | 'girls'>('boys');
   const [newRoomNum, setNewRoomNum] = useState('');
   const [newRoomFloor, setNewRoomFloor] = useState('1');
   const [newRoomCap, setNewRoomCap] = useState('3');
@@ -100,9 +101,10 @@ export default function RoomsPage() {
     if (!newHostelName) return;
     try {
       const db = getDbService();
-      await db.addHostel(newHostelName, newHostelLoc);
+      await db.addHostel(newHostelName, newHostelLoc, newHostelType);
       setNewHostelName('');
       setNewHostelLoc('');
+      setNewHostelType('boys');
       await loadData();
     } catch (err: any) {
       alert(err.message);
@@ -155,8 +157,19 @@ export default function RoomsPage() {
     return !allocations.some(a => a.student_id === s.id && a.status === 'active');
   });
 
-  // Filter rooms that are not full
-  const availableRooms = rooms.filter(r => r.occupied < r.capacity);
+  // Filter rooms that are not full and match student's gender
+  const selectedStudent = students.find(s => s.id === allocStudentId);
+  const selectedStudentGender = selectedStudent?.gender || 'male';
+
+  const availableRooms = rooms.filter(r => {
+    const isRoomNotFull = r.occupied < r.capacity;
+    if (!allocStudentId) return isRoomNotFull;
+
+    const hostel = hostels.find(h => h.id === r.hostel_id);
+    if (!hostel) return isRoomNotFull;
+
+    return isRoomNotFull && hostel.type === (selectedStudentGender === 'female' ? 'girls' : 'boys');
+  });
 
   if (loading) {
     return (
@@ -323,6 +336,17 @@ export default function RoomsPage() {
                         className="w-full p-2.5 bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:border-blue-500 transition-colors"
                       />
                     </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Hostel Type</label>
+                      <select
+                        value={newHostelType}
+                        onChange={(e) => setNewHostelType(e.target.value as 'boys' | 'girls')}
+                        className="w-full p-2.5 bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs focus:outline-none focus:border-blue-500 transition-colors"
+                      >
+                        <option value="boys">Boys Block</option>
+                        <option value="girls">Girls Block</option>
+                      </select>
+                    </div>
                     <button
                       type="submit"
                       className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors"
@@ -410,7 +434,9 @@ export default function RoomsPage() {
                     >
                       <option value="">-- Choose student --</option>
                       {unallocatedStudents.map(s => (
-                        <option key={s.id} value={s.id}>{s.name} ({s.email})</option>
+                        <option key={s.id} value={s.id}>
+                          {s.name} ({s.gender ? s.gender.charAt(0).toUpperCase() + s.gender.slice(1) : 'Male'}) ({s.email})
+                        </option>
                       ))}
                     </select>
                   </div>

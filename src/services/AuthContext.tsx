@@ -10,7 +10,7 @@ interface AuthContextType {
   loading: boolean;
   dbMode: 'supabase' | 'local_storage';
   login: (email: string, role: UserRole) => Promise<{ success: boolean; message?: string }>;
-  register: (email: string, name: string, role: UserRole, phone?: string) => Promise<{ success: boolean; message?: string }>;
+  register: (email: string, name: string, role: UserRole, phone?: string, gender?: 'male' | 'female') => Promise<{ success: boolean; message?: string }>;
   signOut: () => Promise<void>;
   switchRole: (role: UserRole) => Promise<void>;
   reloadUser: () => Promise<void>;
@@ -77,11 +77,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (email: string, name: string, role: UserRole, phone?: string) => {
+  const register = async (email: string, name: string, role: UserRole, phone?: string, gender?: 'male' | 'female') => {
     setLoading(true);
     try {
       const db = getDbService();
-      const res = await db.register(email, name, role, phone);
+      const res = await db.register(email, name, role, phone, gender);
       if (res.success && res.user) {
         setUser(res.user);
         return { success: true };

@@ -14,6 +14,7 @@ function AuthPageContent() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState<'student' | 'admin' | 'warden' | 'security' | 'mess_manager'>('student');
+  const [gender, setGender] = useState<'male' | 'female'>('male');
   const [errorMsg, setErrorMsg] = useState('');
   const router = useRouter();
 
@@ -45,7 +46,7 @@ function AuthPageContent() {
         setErrorMsg('Please enter your full name.');
         return;
       }
-      const res = await register(email, name, role, phone);
+      const res = await register(email, name, role, phone, role === 'student' ? gender : undefined);
       if (res.success) {
         router.push('/dashboard');
       } else {
@@ -160,6 +161,28 @@ function AuthPageContent() {
                     onChange={(e) => setPhone(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors"
                   />
+                </div>
+              </div>
+            )}
+
+            {!isLogin && role === 'student' && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gender</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['male', 'female'] as const).map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setGender(g)}
+                      className={`py-2 px-3 border rounded-xl text-xs font-bold capitalize transition-colors ${
+                        gender === g
+                          ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          : 'border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800'
+                      }`}
+                    >
+                      {g}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}

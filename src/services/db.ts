@@ -9,13 +9,13 @@ export interface IDatabaseService {
   
   // Auth
   login(email: string, role: UserRole): Promise<{ success: boolean; user?: Profile; message?: string }>;
-  register(email: string, name: string, role: UserRole, phone?: string): Promise<{ success: boolean; user?: Profile; message?: string }>;
+  register(email: string, name: string, role: UserRole, phone?: string, gender?: 'male' | 'female'): Promise<{ success: boolean; user?: Profile; message?: string }>;
   getCurrentUser(): Promise<Profile | null>;
   signOut(): Promise<void>;
 
   // Hostels & Rooms
   getHostels(): Promise<Hostel[]>;
-  addHostel(name: string, location?: string): Promise<Hostel>;
+  addHostel(name: string, location?: string, type?: 'boys' | 'girls'): Promise<Hostel>;
   getRooms(hostelId?: string): Promise<Room[]>;
   addRoom(hostelId: string, roomNumber: string, floor: number, capacity: number): Promise<Room>;
   updateRoom(roomId: string, updates: Partial<Room>): Promise<Room>;
@@ -60,17 +60,17 @@ export interface IDatabaseService {
 // LOCAL SEED DATA
 // -------------------------------------------------------------
 const SEED_PROFILES: Profile[] = [
-  { id: 'usr_student1', name: 'Rahul Sharma', email: 'student@hostel.com', role: 'student', phone: '9876543210', created_at: new Date().toISOString() },
-  { id: 'usr_student2', name: 'Sneha Reddy', email: 'student2@hostel.com', role: 'student', phone: '9876543211', created_at: new Date().toISOString() },
-  { id: 'usr_admin', name: 'Alok Gupta (Admin)', email: 'admin@hostel.com', role: 'admin', phone: '9876543212', created_at: new Date().toISOString() },
-  { id: 'usr_warden', name: 'Dr. K.P. Singh (Warden)', email: 'warden@hostel.com', role: 'warden', phone: '9876543213', created_at: new Date().toISOString() },
-  { id: 'usr_security', name: 'Guard Ram Prasad', email: 'security@hostel.com', role: 'security', phone: '9876543214', created_at: new Date().toISOString() },
-  { id: 'usr_mess', name: 'Chef Ramesh Chandra', email: 'mess@hostel.com', role: 'mess_manager', phone: '9876543215', created_at: new Date().toISOString() },
+  { id: 'usr_student1', name: 'Rahul Sharma', email: 'student@hostel.com', role: 'student', gender: 'male', phone: '9876543210', created_at: new Date().toISOString() },
+  { id: 'usr_student2', name: 'Sneha Reddy', email: 'student2@hostel.com', role: 'student', gender: 'female', phone: '9876543211', created_at: new Date().toISOString() },
+  { id: 'usr_admin', name: 'Alok Gupta (Admin)', email: 'admin@hostel.com', role: 'admin', gender: 'male', phone: '9876543212', created_at: new Date().toISOString() },
+  { id: 'usr_warden', name: 'Dr. K.P. Singh (Warden)', email: 'warden@hostel.com', role: 'warden', gender: 'male', phone: '9876543213', created_at: new Date().toISOString() },
+  { id: 'usr_security', name: 'Guard Ram Prasad', email: 'security@hostel.com', role: 'security', gender: 'male', phone: '9876543214', created_at: new Date().toISOString() },
+  { id: 'usr_mess', name: 'Chef Ramesh Chandra', email: 'mess@hostel.com', role: 'mess_manager', gender: 'male', phone: '9876543215', created_at: new Date().toISOString() },
 ];
 
 const SEED_HOSTELS: Hostel[] = [
-  { id: 'hostel_boys_a', name: 'Boys Hostel - Block A', location: 'North Campus', created_at: new Date().toISOString() },
-  { id: 'hostel_girls_b', name: 'Girls Hostel - Block B', location: 'South Campus', created_at: new Date().toISOString() },
+  { id: 'hostel_boys_a', name: 'Boys Hostel - Block A', type: 'boys', location: 'North Campus', created_at: new Date().toISOString() },
+  { id: 'hostel_girls_b', name: 'Girls Hostel - Block B', type: 'girls', location: 'South Campus', created_at: new Date().toISOString() },
 ];
 
 const SEED_ROOMS: Room[] = [
@@ -161,7 +161,7 @@ class LocalStorageAdapter implements IDatabaseService {
     return { success: false, message: `Account with email ${email} and role ${role} not found. Try logging in with the predefined accounts.` };
   }
 
-  async register(email: string, name: string, role: UserRole, phone?: string): Promise<{ success: boolean; user?: Profile; message?: string }> {
+  async register(email: string, name: string, role: UserRole, phone?: string, gender?: 'male' | 'female'): Promise<{ success: boolean; user?: Profile; message?: string }> {
     const profiles = this.getStored<Profile[]>('shms_profiles', SEED_PROFILES);
     if (profiles.some(p => p.email.toLowerCase() === email.toLowerCase())) {
       return { success: false, message: 'Email already registered.' };
@@ -171,16 +171,23 @@ class LocalStorageAdapter implements IDatabaseService {
       name,
       email,
       role,
+      gender,
       phone,
       created_at: new Date().toISOString()
     };
     profiles.push(newUser);
     this.setStored('shms_profiles', profiles);
     
-    // Automatically auto-allocate room if role is student for test user
-    if (role === 'student') {
+    // Automatically auto-allocate room if role is student for test user (matching gender and notifying warden)
+    if (role === 'student' && gender) {
       const rooms = this.getStored<Room[]>('shms_rooms', SEED_ROOMS);
-      const freeRoom = rooms.find(r => r.occupied < r.capacity);
+      const hostels = this.getStored<Hostel[]>('shms_hostels', SEED_HOSTELS);
+      const freeRoom = rooms.find(r => {
+        const hostel = hostels.find(h => h.id === r.hostel_id);
+        const matchesGender = gender === 'female' ? hostel?.type === 'girls' : hostel?.type === 'boys';
+        return r.occupied < r.capacity && matchesGender;
+      });
+
       if (freeRoom) {
         freeRoom.occupied += 1;
         this.setStored('shms_rooms', rooms);
@@ -193,6 +200,17 @@ class LocalStorageAdapter implements IDatabaseService {
           status: 'active'
         });
         this.setStored('shms_allocations', allocations);
+
+        const matchingHostel = hostels.find(h => h.id === freeRoom.hostel_id);
+        const wardens = profiles.filter(p => p.role === 'warden');
+        for (const w of wardens) {
+          await this.addNotification(
+            w.id,
+            'New Room Auto-Allocation',
+            `Student ${name} (${gender}) has registered and was auto-allocated Room ${freeRoom.room_number} in ${matchingHostel?.name || 'Hostel Block'}.`,
+            'announcement'
+          );
+        }
       }
     }
 
@@ -221,11 +239,12 @@ class LocalStorageAdapter implements IDatabaseService {
     return this.getStored<Hostel[]>('shms_hostels', SEED_HOSTELS);
   }
 
-  async addHostel(name: string, location?: string): Promise<Hostel> {
+  async addHostel(name: string, location?: string, type?: 'boys' | 'girls'): Promise<Hostel> {
     const hostels = await this.getHostels();
     const newHostel: Hostel = {
       id: 'hostel_' + Math.random().toString(36).substring(2, 9),
       name,
+      type: type || (name.toLowerCase().includes('girls') ? 'girls' : 'boys'),
       location,
       created_at: new Date().toISOString()
     };
@@ -295,11 +314,26 @@ class LocalStorageAdapter implements IDatabaseService {
   async allocateRoom(studentId: string, roomId: string): Promise<Allocation> {
     const allocations = this.getStored<Allocation[]>('shms_allocations', SEED_ALLOCATIONS);
     const rooms = this.getStored<Room[]>('shms_rooms', SEED_ROOMS);
+    const profiles = this.getStored<Profile[]>('shms_profiles', SEED_PROFILES);
+    const hostels = this.getStored<Hostel[]>('shms_hostels', SEED_HOSTELS);
     
-    // Check if room is full
     const room = rooms.find(r => r.id === roomId);
     if (!room) throw new Error('Room not found');
     if (room.occupied >= room.capacity) throw new Error('Room is already fully occupied');
+
+    const student = profiles.find(p => p.id === studentId);
+    if (!student) throw new Error('Student profile not found');
+
+    const hostel = hostels.find(h => h.id === room.hostel_id);
+    if (!hostel) throw new Error('Hostel block not found');
+
+    const studentGender = student.gender || 'male';
+    if (studentGender === 'male' && hostel.type !== 'boys') {
+      throw new Error(`Cannot allocate Male student (${student.name}) to a Girls Hostel block (${hostel.name}).`);
+    }
+    if (studentGender === 'female' && hostel.type !== 'girls') {
+      throw new Error(`Cannot allocate Female student (${student.name}) to a Boys Hostel block (${hostel.name}).`);
+    }
 
     // Vacate active allocations for this student first
     const activeIdx = allocations.findIndex(a => a.student_id === studentId && a.status === 'active');
@@ -334,6 +368,17 @@ class LocalStorageAdapter implements IDatabaseService {
       `You have been allocated room ${room.room_number} (Floor ${room.floor})`,
       'announcement'
     );
+
+    // Notify all wardens
+    const wardens = profiles.filter(p => p.role === 'warden');
+    for (const w of wardens) {
+      await this.addNotification(
+        w.id,
+        'Resident Allocated',
+        `Student ${student.name} (${studentGender}) has been allocated to Room ${room.room_number} in ${hostel.name}.`,
+        'announcement'
+      );
+    }
 
     return newAlloc;
   }
@@ -781,7 +826,7 @@ class SupabaseAdapter implements IDatabaseService {
     }
   }
 
-  async register(email: string, name: string, role: UserRole, phone?: string): Promise<{ success: boolean; user?: Profile; message?: string }> {
+  async register(email: string, name: string, role: UserRole, phone?: string, gender?: 'male' | 'female'): Promise<{ success: boolean; user?: Profile; message?: string }> {
     const client = getSupabaseClient();
     if (!client) return { success: false, message: 'Supabase client not initialized.' };
 
@@ -799,7 +844,7 @@ class SupabaseAdapter implements IDatabaseService {
 
       // Generate a mock auth uuid for simplicity since we bypass complete auth verification for local runs
       const id = 'usr_' + Math.random().toString(36).substring(2, 12);
-      const newProfile = { id, name, email, role, phone, created_at: new Date().toISOString() };
+      const newProfile = { id, name, email, role, phone, gender, created_at: new Date().toISOString() };
 
       const { data, error } = await client
         .from('profiles')
@@ -851,10 +896,14 @@ class SupabaseAdapter implements IDatabaseService {
     return data || [];
   }
 
-  async addHostel(name: string, location?: string): Promise<Hostel> {
+  async addHostel(name: string, location?: string, type?: 'boys' | 'girls'): Promise<Hostel> {
     const client = getSupabaseClient();
     if (!client) throw new Error('Supabase not connected');
-    const { data, error } = await client.from('hostels').insert([{ name, location }]).select().single();
+    const { data, error } = await client.from('hostels').insert([{ 
+      name, 
+      location, 
+      type: type || (name.toLowerCase().includes('girls') ? 'girls' : 'boys') 
+    }]).select().single();
     if (error) throw error;
     return data;
   }
@@ -907,10 +956,24 @@ class SupabaseAdapter implements IDatabaseService {
     const client = getSupabaseClient();
     if (!client) throw new Error('Supabase not connected');
 
-    // 1. Validate room capacity
-    const { data: room, error: roomErr } = await client.from('rooms').select('capacity, occupied, room_number, floor').eq('id', roomId).single();
+    // 1. Validate student and room details
+    const { data: student, error: studentErr } = await client.from('profiles').select('name, gender').eq('id', studentId).single();
+    if (studentErr || !student) throw new Error('Student profile not found');
+
+    const { data: room, error: roomErr } = await client.from('rooms').select('capacity, occupied, room_number, floor, hostel_id').eq('id', roomId).single();
     if (roomErr || !room) throw new Error('Room not found');
     if (room.occupied >= room.capacity) throw new Error('Room is full');
+
+    const { data: hostel, error: hostelErr } = await client.from('hostels').select('name, type').eq('id', room.hostel_id).single();
+    if (hostelErr || !hostel) throw new Error('Hostel block not found');
+
+    const studentGender = student.gender || 'male';
+    if (studentGender === 'male' && hostel.type !== 'boys') {
+      throw new Error(`Cannot allocate Male student (${student.name}) to a Girls Hostel block (${hostel.name}).`);
+    }
+    if (studentGender === 'female' && hostel.type !== 'girls') {
+      throw new Error(`Cannot allocate Female student (${student.name}) to a Boys Hostel block (${hostel.name}).`);
+    }
 
     // 2. Clear old allocations
     const { data: oldAlloc } = await client.from('allocations').select('*').eq('student_id', studentId).eq('status', 'active').maybeSingle();
@@ -929,8 +992,21 @@ class SupabaseAdapter implements IDatabaseService {
     // 4. Update new room occupancy
     await client.from('rooms').update({ occupied: room.occupied + 1 }).eq('id', roomId);
 
-    // 5. Create notification
+    // 5. Create notification for the student
     await this.addNotification(studentId, 'Room Allocated', `You have been allocated room ${room.room_number} (Floor ${room.floor})`, 'announcement');
+
+    // 6. Notify all wardens
+    const { data: wardens } = await client.from('profiles').select('id').eq('role', 'warden');
+    if (wardens) {
+      for (const w of wardens) {
+        await this.addNotification(
+          w.id,
+          'Resident Allocated',
+          `Student ${student.name} (${studentGender}) has been allocated to Room ${room.room_number} in ${hostel.name}.`,
+          'announcement'
+        );
+      }
+    }
 
     return newAlloc;
   }
