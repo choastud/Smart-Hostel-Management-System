@@ -1403,17 +1403,25 @@ export class ApiAdapter implements IDatabaseService {
 
   // Auth Operations
   async login(email: string, role: UserRole): Promise<{ success: boolean; user?: Profile; message?: string }> {
-    return this.fetchApi<{ success: boolean; user?: Profile; message?: string }>('auth/login', {
+    const res = await this.fetchApi<{ success: boolean; user?: Profile; message?: string }>('auth/login', {
       method: 'POST',
       body: { email, role }
     });
+    if (res.success && res.user && typeof window !== 'undefined') {
+      localStorage.setItem('shms_current_user_id', res.user.id);
+    }
+    return res;
   }
 
   async register(email: string, name: string, role: UserRole, phone?: string, gender?: 'male' | 'female'): Promise<{ success: boolean; user?: Profile; message?: string }> {
-    return this.fetchApi<{ success: boolean; user?: Profile; message?: string }>('auth/register', {
+    const res = await this.fetchApi<{ success: boolean; user?: Profile; message?: string }>('auth/register', {
       method: 'POST',
       body: { email, name, role, phone, gender }
     });
+    if (res.success && res.user && typeof window !== 'undefined') {
+      localStorage.setItem('shms_current_user_id', res.user.id);
+    }
+    return res;
   }
 
   async getCurrentUser(): Promise<Profile | null> {

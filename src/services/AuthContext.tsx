@@ -66,6 +66,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const db = getDbService();
       const res = await db.login(email, role);
       if (res.success && res.user) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('shms_current_user_id', res.user.id);
+        }
         setUser(res.user);
         return { success: true };
       }
@@ -83,6 +86,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const db = getDbService();
       const res = await db.register(email, name, role, phone, gender);
       if (res.success && res.user) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('shms_current_user_id', res.user.id);
+        }
         setUser(res.user);
         return { success: true };
       }
