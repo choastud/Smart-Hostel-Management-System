@@ -117,11 +117,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const switchRole = async (role: UserRole) => {
     const matchingAccount = TEST_ACCOUNTS.find(a => a.role === role);
     if (matchingAccount) {
-      await login(matchingAccount.email, role);
+      const res = await login(matchingAccount.email, role);
+      if (res.success) {
+        // Force redirect to the correct role-specific dashboard
+        const rolePaths: Record<string, string> = {
+          student: '/dashboard/student',
+          warden: '/dashboard/warden',
+          admin: '/dashboard/warden',
+          security: '/dashboard/security',
+          mess_manager: '/dashboard/mess-manager',
+        };
+        router.push(rolePaths[role] || '/dashboard');
+      }
     } else {
-      // In case no account matches (fallback helper)
       const mockEmail = `${role}@hostel.com`;
-      await login(mockEmail, role);
+      const res = await login(mockEmail, role);
+      if (res.success) {
+        router.push('/dashboard');
+      }
     }
   };
 
