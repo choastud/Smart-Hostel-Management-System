@@ -69,11 +69,11 @@ CREATE TABLE attendance (
 -- 6. COMPLAINTS TABLE
 CREATE TABLE complaints (
   id TEXT PRIMARY KEY,
-  student_id TEXT REFERENCES profiles(id) ON DELETE CASCADE CONSTRAINT complaints_student_id_fkey,
+  student_id TEXT CONSTRAINT complaints_student_id_fkey REFERENCES profiles(id) ON DELETE CASCADE,
   category TEXT NOT NULL,
   description TEXT NOT NULL,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'resolved')),
-  assigned_to TEXT REFERENCES profiles(id) ON DELETE SET NULL CONSTRAINT complaints_assigned_to_fkey,
+  assigned_to TEXT CONSTRAINT complaints_assigned_to_fkey REFERENCES profiles(id) ON DELETE SET NULL,
   resolved_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
