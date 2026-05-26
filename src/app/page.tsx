@@ -22,25 +22,25 @@ export default function LandingPage() {
     {
       title: "Student Portal",
       image: "/student_portal.png",
-      href: "/auth",
+      href: "/login",
       color: "text-blue-600 dark:text-blue-400"
     },
     {
       title: "Warden Dashboard",
       image: "/warden_portal.png",
-      href: "/auth",
+      href: "/login",
       color: "text-indigo-600 dark:text-indigo-400"
     },
     {
       title: "Security Gate",
       image: "/security_gate.png",
-      href: "/auth",
+      href: "/login",
       color: "text-purple-600 dark:text-purple-400"
     },
     {
       title: "Mess & Fees",
       image: "/mess_fees.png",
-      href: "/auth",
+      href: "/login",
       color: "text-amber-600 dark:text-amber-400"
     },
   ];
@@ -126,7 +126,7 @@ export default function LandingPage() {
                   <Separator className="mx-6" />
                   <div className="p-6">
                     <Link 
-                      href="/auth"
+                      href="/login"
                       className={cn(
                         buttonVariants({ variant: "default" }),
                         "w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl text-white flex items-center justify-center"
@@ -143,7 +143,7 @@ export default function LandingPage() {
             {/* Right Asymmetrical Header Section */}
             <div className="hidden md:flex w-1/2 justify-end items-center pr-6 gap-4 ml-auto">
               <Link 
-                href="/auth"
+                href="/login"
                 className={cn(
                   buttonVariants({ variant: "outline" }),
                   "cursor-pointer bg-white/80 dark:bg-zinc-950/80 hover:bg-white dark:hover:bg-zinc-950 border border-slate-200/80 dark:border-zinc-800 rounded-full py-0 pl-4 pr-1 h-11 flex items-center gap-1 group shadow-sm transition-all duration-300"
@@ -201,7 +201,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
               >
                 <Link 
-                  href="/auth"
+                  href="/login"
                   className={cn(
                     buttonVariants({ variant: "default" }),
                     "w-full sm:w-auto h-12 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-8 rounded-full font-bold shadow-md hover:bg-slate-800 dark:hover:bg-slate-100 transition-all flex items-center justify-center gap-2"

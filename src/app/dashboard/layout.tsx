@@ -12,7 +12,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/auth');
+      router.push('/login');
     }
   }, [user, loading, router]);
 
