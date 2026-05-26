@@ -55,7 +55,34 @@ function readLocalDb(): LocalDbStructure {
   }
   try {
     const content = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(content);
+    const data = JSON.parse(content) as LocalDbStructure;
+    let updated = false;
+    if (data.profiles) {
+      data.profiles = data.profiles.map(p => {
+        if (!p.gender) {
+          if (p.id === 'usr_student2' || p.email.toLowerCase().includes('student2') || p.name.toLowerCase().includes('sneha')) {
+            p.gender = 'female';
+          } else {
+            p.gender = 'male';
+          }
+          updated = true;
+        }
+        return p;
+      });
+    }
+    if (data.hostels) {
+      data.hostels = data.hostels.map(h => {
+        if (!h.type) {
+          h.type = h.name.toLowerCase().includes('girls') ? 'girls' : 'boys';
+          updated = true;
+        }
+        return h;
+      });
+    }
+    if (updated) {
+      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    }
+    return data;
   } catch (error) {
     console.error('Error reading local server db file, resetting to seeds:', error);
     const initialData: LocalDbStructure = {
@@ -175,7 +202,8 @@ export class DbServerInstance {
       if (role === 'student' && gender) {
         const freeRoom = db.rooms.find(r => {
           const hostel = db.hostels.find(h => h.id === r.hostel_id);
-          const matchesGender = gender === 'female' ? hostel?.type === 'girls' : hostel?.type === 'boys';
+          const hostelType = hostel ? (hostel.type || (hostel.name.toLowerCase().includes('girls') ? 'girls' : 'boys')) : 'boys';
+          const matchesGender = gender === 'female' ? hostelType === 'girls' : hostelType === 'boys';
           return r.occupied < r.capacity && matchesGender;
         });
 
@@ -354,10 +382,11 @@ export class DbServerInstance {
       if (hostelErr || !hostel) throw new Error('Hostel block not found');
 
       const studentGender = student.gender || 'male';
-      if (studentGender === 'male' && hostel.type !== 'boys') {
+      const hostelType = hostel.type || (hostel.name.toLowerCase().includes('girls') ? 'girls' : 'boys');
+      if (studentGender === 'male' && hostelType !== 'boys') {
         throw new Error(`Cannot allocate Male student (${student.name}) to a Girls Hostel block (${hostel.name}).`);
       }
-      if (studentGender === 'female' && hostel.type !== 'girls') {
+      if (studentGender === 'female' && hostelType !== 'girls') {
         throw new Error(`Cannot allocate Female student (${student.name}) to a Boys Hostel block (${hostel.name}).`);
       }
 
@@ -409,10 +438,11 @@ export class DbServerInstance {
       if (!hostel) throw new Error('Hostel block not found');
 
       const studentGender = student.gender || 'male';
-      if (studentGender === 'male' && hostel.type !== 'boys') {
+      const hostelType = hostel.type || (hostel.name.toLowerCase().includes('girls') ? 'girls' : 'boys');
+      if (studentGender === 'male' && hostelType !== 'boys') {
         throw new Error(`Cannot allocate Male student (${student.name}) to a Girls Hostel block (${hostel.name}).`);
       }
-      if (studentGender === 'female' && hostel.type !== 'girls') {
+      if (studentGender === 'female' && hostelType !== 'girls') {
         throw new Error(`Cannot allocate Female student (${student.name}) to a Boys Hostel block (${hostel.name}).`);
       }
 

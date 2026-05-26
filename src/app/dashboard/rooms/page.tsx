@@ -168,7 +168,8 @@ export default function RoomsPage() {
     const hostel = hostels.find(h => h.id === r.hostel_id);
     if (!hostel) return isRoomNotFull;
 
-    return isRoomNotFull && hostel.type === (selectedStudentGender === 'female' ? 'girls' : 'boys');
+    const hostelType = hostel.type || (hostel.name.toLowerCase().includes('girls') ? 'girls' : 'boys');
+    return isRoomNotFull && hostelType === (selectedStudentGender === 'female' ? 'girls' : 'boys');
   });
 
   if (loading) {

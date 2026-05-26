@@ -124,6 +124,26 @@ export const SEED_NOTIFICATIONS: Notification[] = [
   { id: 'not_3', user_id: 'usr_student2', title: 'Complaint Assigned', message: 'Warden has assigned electrical team to fix your room fan.', type: 'complaint', is_read: false, created_at: new Date().toISOString() },
 ];
 
+function getHostelType(hostel: { type?: 'boys' | 'girls'; name: string }): 'boys' | 'girls' {
+  return hostel.type || (hostel.name.toLowerCase().includes('girls') ? 'girls' : 'boys');
+}
+
+function healProfiles(profiles: Profile[]): { healed: Profile[]; updated: boolean } {
+  let updated = false;
+  const healed = profiles.map(p => {
+    if (!p.gender) {
+      if (p.id === 'usr_student2' || p.email.toLowerCase().includes('student2') || p.name.toLowerCase().includes('sneha')) {
+        p.gender = 'female';
+      } else {
+        p.gender = 'male';
+      }
+      updated = true;
+    }
+    return p;
+  });
+  return { healed, updated };
+}
+
 // -------------------------------------------------------------
 // LOCAL STORAGE ADAPTER
 // -------------------------------------------------------------
@@ -139,7 +159,29 @@ class LocalStorageAdapter implements IDatabaseService {
       localStorage.setItem(key, JSON.stringify(seed));
       return seed;
     }
-    return JSON.parse(val);
+    const data = JSON.parse(val);
+    if (key === 'shms_profiles') {
+      const { healed, updated } = healProfiles(data as Profile[]);
+      if (updated) {
+        localStorage.setItem(key, JSON.stringify(healed));
+      }
+      return healed as unknown as T;
+    }
+    if (key === 'shms_hostels') {
+      let updated = false;
+      const healed = (data as Hostel[]).map(h => {
+        if (!h.type) {
+          h.type = h.name.toLowerCase().includes('girls') ? 'girls' : 'boys';
+          updated = true;
+        }
+        return h;
+      });
+      if (updated) {
+        localStorage.setItem(key, JSON.stringify(healed));
+      }
+      return healed as unknown as T;
+    }
+    return data;
   }
 
   private setStored<T>(key: string, data: T): void {
@@ -184,7 +226,8 @@ class LocalStorageAdapter implements IDatabaseService {
       const hostels = this.getStored<Hostel[]>('shms_hostels', SEED_HOSTELS);
       const freeRoom = rooms.find(r => {
         const hostel = hostels.find(h => h.id === r.hostel_id);
-        const matchesGender = gender === 'female' ? hostel?.type === 'girls' : hostel?.type === 'boys';
+        const hostelType = hostel ? getHostelType(hostel) : 'boys';
+        const matchesGender = gender === 'female' ? hostelType === 'girls' : hostelType === 'boys';
         return r.occupied < r.capacity && matchesGender;
       });
 
@@ -327,11 +370,12 @@ class LocalStorageAdapter implements IDatabaseService {
     const hostel = hostels.find(h => h.id === room.hostel_id);
     if (!hostel) throw new Error('Hostel block not found');
 
+    const hostelType = getHostelType(hostel);
     const studentGender = student.gender || 'male';
-    if (studentGender === 'male' && hostel.type !== 'boys') {
+    if (studentGender === 'male' && hostelType !== 'boys') {
       throw new Error(`Cannot allocate Male student (${student.name}) to a Girls Hostel block (${hostel.name}).`);
     }
-    if (studentGender === 'female' && hostel.type !== 'girls') {
+    if (studentGender === 'female' && hostelType !== 'girls') {
       throw new Error(`Cannot allocate Female student (${student.name}) to a Boys Hostel block (${hostel.name}).`);
     }
 
@@ -968,10 +1012,11 @@ class SupabaseAdapter implements IDatabaseService {
     if (hostelErr || !hostel) throw new Error('Hostel block not found');
 
     const studentGender = student.gender || 'male';
-    if (studentGender === 'male' && hostel.type !== 'boys') {
+    const hostelType = hostel.type || (hostel.name.toLowerCase().includes('girls') ? 'girls' : 'boys');
+    if (studentGender === 'male' && hostelType !== 'boys') {
       throw new Error(`Cannot allocate Male student (${student.name}) to a Girls Hostel block (${hostel.name}).`);
     }
-    if (studentGender === 'female' && hostel.type !== 'girls') {
+    if (studentGender === 'female' && hostelType !== 'girls') {
       throw new Error(`Cannot allocate Female student (${student.name}) to a Boys Hostel block (${hostel.name}).`);
     }
 
@@ -1560,6 +1605,10 @@ export class ApiAdapter implements IDatabaseService {
       body: { notificationId }
     });
     return res.success;
+  }
+
+  getSupabaseClient() {
+    return getSupabaseClient();
   }
 }
 
