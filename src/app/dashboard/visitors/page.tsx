@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../../../services/AuthContext';
 import { getDbService } from '../../../services/db';
 import { Visitor, Profile } from '../../../types';
@@ -298,7 +299,12 @@ export default function VisitorsPage() {
                           <div className="text-[10px] text-slate-400 mt-0.5">{vis.phone}</div>
                         </td>
                         <td className="py-3.5 px-2">
-                          <div className="font-semibold">{vis.student_name}</div>
+                          <Link 
+                            href={`/dashboard/profiles/${vis.student_id}`}
+                            className="font-semibold text-blue-650 hover:text-blue-700 hover:underline transition-colors"
+                          >
+                            {vis.student_name}
+                          </Link>
                           <div className="text-[10px] text-slate-400 mt-0.5">Room {vis.room_number || 'N/A'}</div>
                         </td>
                         <td className="py-3.5 px-2">
@@ -371,7 +377,12 @@ export default function VisitorsPage() {
                         <div className="text-[10px] text-slate-400 mt-0.5">{vis.phone}</div>
                       </td>
                       <td className="py-3.5 px-2 font-semibold">
-                        {vis.student_name}
+                        <Link 
+                          href={`/dashboard/profiles/${vis.student_id}`}
+                          className="text-blue-650 hover:text-blue-700 hover:underline transition-colors"
+                        >
+                          {vis.student_name}
+                        </Link>
                       </td>
                       <td className="py-3.5 px-2 text-slate-400">
                         {vis.purpose || 'N/A'}

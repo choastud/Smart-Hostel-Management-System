@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../../../services/AuthContext';
 import { getDbService } from '../../../services/db';
 import { Room, Hostel, Allocation, Profile } from '../../../types';
@@ -532,7 +533,12 @@ export default function RoomsPage() {
                         allocations.filter(a => a.status === 'active').map(alloc => (
                           <tr key={alloc.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/20">
                             <td className="py-3.5 px-2">
-                              <div className="font-bold">{alloc.student?.name || 'Unknown'}</div>
+                              <Link 
+                                href={`/dashboard/profiles/${alloc.student_id}`}
+                                className="font-bold text-blue-650 hover:text-blue-700 hover:underline transition-colors"
+                              >
+                                {alloc.student?.name || 'Unknown'}
+                              </Link>
                               <div className="text-[10px] text-slate-400 mt-0.5">{alloc.student?.email}</div>
                             </td>
                             <td className="py-3.5 px-2">

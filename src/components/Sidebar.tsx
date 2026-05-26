@@ -18,6 +18,7 @@ interface SidebarItem {
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['student', 'admin', 'warden', 'security', 'mess_manager'] },
+  { name: 'Profiles Directory', href: '/dashboard/profiles', icon: Users, roles: ['student', 'admin', 'warden', 'security', 'mess_manager'] },
   { name: 'Room Allocation', href: '/dashboard/rooms', icon: DoorOpen, roles: ['student', 'admin', 'warden'] },
   { name: 'QR Attendance', href: '/dashboard/attendance', icon: CalendarCheck, roles: ['student', 'admin', 'warden', 'security'] },
   { name: 'Complaints', href: '/dashboard/complaints', icon: AlertCircle, roles: ['student', 'admin', 'warden'] },
@@ -33,8 +34,23 @@ export default function Sidebar() {
 
   if (!user) return null;
 
-  // Filter items matching user role
-  const menuItems = SIDEBAR_ITEMS.filter(item => item.roles.includes(user.role));
+  // Filter items matching user role and dynamically resolve role dashboard paths
+  const menuItems = SIDEBAR_ITEMS.filter(item => item.roles.includes(user.role)).map(item => {
+    if (item.name === 'Dashboard') {
+      const rolePaths: Record<string, string> = {
+        student: '/dashboard/student',
+        warden: '/dashboard/warden',
+        admin: '/dashboard/warden',
+        security: '/dashboard/security',
+        mess_manager: '/dashboard/mess-manager',
+      };
+      return {
+        ...item,
+        href: rolePaths[user.role] || '/dashboard/student'
+      };
+    }
+    return item;
+  });
 
   const roleLabels: Record<string, string> = {
     student: 'Resident Student',
@@ -70,7 +86,7 @@ export default function Sidebar() {
       {/* Navigation Menu */}
       <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
         {menuItems.map(item => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || (item.name === 'Dashboard' && pathname === '/dashboard');
           const Icon = item.icon;
 
           return (

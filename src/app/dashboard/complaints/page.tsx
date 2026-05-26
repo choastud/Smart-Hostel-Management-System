@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../../../services/AuthContext';
 import { getDbService } from '../../../services/db';
 import { Complaint, Profile } from '../../../types';
@@ -263,7 +264,12 @@ export default function ComplaintsPage() {
                         #{comp.id.substring(0, 8)}
                       </td>
                       <td className="py-3.5 px-2">
-                        <div className="font-bold">{comp.student_name}</div>
+                        <Link 
+                          href={`/dashboard/profiles/${comp.student_id}`}
+                          className="font-bold text-blue-650 hover:text-blue-700 hover:underline transition-colors"
+                        >
+                          {comp.student_name}
+                        </Link>
                         <div className="text-[10px] text-slate-400 mt-0.5">Resident Student</div>
                       </td>
                       <td className="py-3.5 px-2 max-w-xs">
