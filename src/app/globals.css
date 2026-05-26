@@ -28,6 +28,13 @@
   }
 }
 
+.dark {
+  --background: #121212;
+  --foreground: #F8FAFC;
+  --card: #1E1E1E;
+  --border: #2D2D2D;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
@@ -92,37 +99,16 @@ body {
   display: none;
 }
 
-/* Select box */
+/* Select box & options styling */
 select {
-  color: #1e293b !important;
-  background-color: #ffffff !important;
+  color: var(--foreground) !important;
+  background-color: var(--card) !important;
+  border-color: var(--border) !important;
+  color-scheme: light dark;
 }
 
-/* Dropdown options */
 select option {
-  color: #1e293b !important;
-  background-color: #ffffff !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  select {
-    color: #f1f5f9 !important;
-    background-color: #1e1e21 !important;
-  }
-
-  select option {
-    color: #f1f5f9 !important;
-    background-color: #1e1e21 !important;
-  }
-}
-
-/* Tailwind dark mode */
-.dark select {
-  color: #f1f5f9 !important;
-  background-color: #1e1e21 !important;
-}
-
-.dark select option {
-  color: #f1f5f9 !important;
-  background-color: #1e1e21 !important;
+  color: var(--foreground) !important;
+  background-color: var(--card) !important;
+  color-scheme: light dark;
 }
