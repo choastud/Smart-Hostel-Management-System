@@ -265,7 +265,8 @@ export class DbServerInstance {
   async addHostel(name: string, location?: string, type?: 'boys' | 'girls'): Promise<Hostel> {
     const finalType = type || (name.toLowerCase().includes('girls') ? 'girls' : 'boys');
     if (this.client) {
-      const { data, error } = await this.client.from('hostels').insert([{ name, location, type: finalType }]).select().single();
+      const id = 'hostel_' + Math.random().toString(36).substring(2, 12);
+      const { data, error } = await this.client.from('hostels').insert([{ id, name, location, type: finalType }]).select().single();
       if (error) throw error;
       return data;
     } else {
@@ -307,7 +308,8 @@ export class DbServerInstance {
 
   async addRoom(hostelId: string, roomNumber: string, floor: number, capacity: number): Promise<Room> {
     if (this.client) {
-      const { data, error } = await this.client.from('rooms').insert([{ hostel_id: hostelId, room_number: roomNumber, floor, capacity }]).select().single();
+      const id = 'room_' + Math.random().toString(36).substring(2, 12);
+      const { data, error } = await this.client.from('rooms').insert([{ id, hostel_id: hostelId, room_number: roomNumber, floor, capacity }]).select().single();
       if (error) throw error;
       return data;
     } else {
@@ -401,7 +403,8 @@ export class DbServerInstance {
       }
 
       // 3. Insert new allocation
-      const { data: newAlloc, error: allocErr } = await this.client.from('allocations').insert([{ student_id: studentId, room_id: roomId, status: 'active' }]).select().single();
+      const allocId = 'alloc_' + Math.random().toString(36).substring(2, 12);
+      const { data: newAlloc, error: allocErr } = await this.client.from('allocations').insert([{ id: allocId, student_id: studentId, room_id: roomId, status: 'active' }]).select().single();
       if (allocErr) throw allocErr;
 
       // 4. Update new room occupancy
@@ -555,7 +558,9 @@ export class DbServerInstance {
           check_out: checkOut || undefined
         }).eq('id', existing.id).select().single();
       } else {
+        const attId = 'att_' + Math.random().toString(36).substring(2, 12);
         res = await this.client.from('attendance').insert([{
+          id: attId,
           student_id: studentId,
           date,
           status,
@@ -649,7 +654,8 @@ export class DbServerInstance {
 
   async addComplaint(studentId: string, category: string, description: string): Promise<Complaint> {
     if (this.client) {
-      const { data, error } = await this.client.from('complaints').insert([{ student_id: studentId, category, description, status: 'pending' }]).select().single();
+      const compId = 'comp_' + Math.random().toString(36).substring(2, 12);
+      const { data, error } = await this.client.from('complaints').insert([{ id: compId, student_id: studentId, category, description, status: 'pending' }]).select().single();
       if (error) throw error;
 
       // Notify wardens/admins
@@ -758,7 +764,8 @@ export class DbServerInstance {
 
   async addVisitor(visitorName: string, phone: string, studentId: string, purpose?: string): Promise<Visitor> {
     if (this.client) {
-      const { data, error } = await this.client.from('visitors').insert([{ visitor_name: visitorName, phone, student_id: studentId, purpose, status: 'pending' }]).select().single();
+      const visId = 'vis_' + Math.random().toString(36).substring(2, 12);
+      const { data, error } = await this.client.from('visitors').insert([{ id: visId, visitor_name: visitorName, phone, student_id: studentId, purpose, status: 'pending' }]).select().single();
       if (error) throw error;
       await this.addNotification(studentId, 'Visitor Approval Required', `${visitorName} is requesting entry to see you.`, 'visitor');
       return data;
@@ -869,7 +876,8 @@ export class DbServerInstance {
 
   async addFee(studentId: string, amount: number, dueDate: string): Promise<Fee> {
     if (this.client) {
-      const { data, error } = await this.client.from('fees').insert([{ student_id: studentId, amount, due_date: dueDate, payment_status: 'unpaid' }]).select().single();
+      const feeId = 'fee_' + Math.random().toString(36).substring(2, 12);
+      const { data, error } = await this.client.from('fees').insert([{ id: feeId, student_id: studentId, amount, due_date: dueDate, payment_status: 'unpaid' }]).select().single();
       if (error) throw error;
       await this.addNotification(studentId, 'Fees Invoiced', `New hostel fee of Rs. ${amount} generated. Due: ${dueDate}`, 'fee');
       return data;
@@ -948,7 +956,8 @@ export class DbServerInstance {
       if (existing) {
         res = await this.client.from('mess_menu').update({ breakfast, lunch, dinner }).eq('id', existing.id).select().single();
       } else {
-        res = await this.client.from('mess_menu').insert([{ day_of_week: dayOfWeek, breakfast, lunch, dinner }]).select().single();
+        const menuId = 'menu_' + Math.random().toString(36).substring(2, 12);
+        res = await this.client.from('mess_menu').insert([{ id: menuId, day_of_week: dayOfWeek, breakfast, lunch, dinner }]).select().single();
       }
       if (res.error) throw res.error;
       return res.data;
@@ -1000,7 +1009,9 @@ export class DbServerInstance {
 
   async addMessFeedback(studentId: string, mealType: 'breakfast' | 'lunch' | 'dinner', rating: number, comment?: string): Promise<MessFeedback> {
     if (this.client) {
+      const fbId = 'fb_' + Math.random().toString(36).substring(2, 12);
       const { data, error } = await this.client.from('mess_feedback').insert([{
+        id: fbId,
         student_id: studentId,
         meal_type: mealType,
         rating,
@@ -1058,7 +1069,8 @@ export class DbServerInstance {
 
   async addNotification(userId: string, title: string, message: string, type: Notification['type']): Promise<Notification> {
     if (this.client) {
-      const { data, error } = await this.client.from('notifications').insert([{ user_id: userId, title, message, type, is_read: false }]).select().single();
+      const notifId = 'not_' + Math.random().toString(36).substring(2, 12);
+      const { data, error } = await this.client.from('notifications').insert([{ id: notifId, user_id: userId, title, message, type, is_read: false }]).select().single();
       if (error) throw error;
       return data;
     } else {
