@@ -11,6 +11,8 @@ import Link from 'next/link';
 function LoginPageContent() {
   const { user, login, loading } = useAuth();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [role, setRole] = useState<'student' | 'admin' | 'warden' | 'security' | 'mess_manager'>('student');
   const [errorMsg, setErrorMsg] = useState('');
   const router = useRouter();
@@ -117,6 +119,40 @@ function LoginPageContent() {
                   className="w-full pl-10 pr-4 py-3 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
+            </div>
+
+            {/* Password Field */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Password</label>
+                <a href="#" onClick={(e) => { e.preventDefault(); alert("Simulation: any password is accepted."); }} className="text-[10px] font-bold text-blue-650 hover:underline">
+                  Forgot Password?
+                </a>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3.5 text-slate-400" size={16} />
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Remember Me */}
+            <div className="flex items-center gap-2">
+              <input
+                id="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-300 dark:border-zinc-800 text-blue-600 focus:ring-blue-500 accent-blue-600 bg-white dark:bg-zinc-900"
+              />
+              <label htmlFor="remember-me" className="text-xs font-semibold text-slate-500 dark:text-zinc-400 select-none cursor-pointer">
+                Remember my credentials
+              </label>
             </div>
 
             <div className="space-y-1.5">

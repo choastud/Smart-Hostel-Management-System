@@ -124,16 +124,24 @@ export default function LandingPage() {
                     ))}
                   </nav>
                   <Separator className="mx-6" />
-                  <div className="p-6">
+                  <div className="p-6 flex flex-col gap-3">
                     <Link 
                       href="/login"
                       className={cn(
-                        buttonVariants({ variant: "default" }),
-                        "w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl text-white flex items-center justify-center"
+                        buttonVariants({ variant: "outline" }),
+                        "w-full h-12 flex items-center justify-center font-bold"
                       )}
                     >
-                      Access Portal
-                      <ArrowUpRight className="w-4 h-4 ml-2" />
+                      Log In
+                    </Link>
+                    <Link 
+                      href="/register"
+                      className={cn(
+                        buttonVariants({ variant: "default" }),
+                        "w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white flex items-center justify-center font-bold"
+                      )}
+                    >
+                      Sign Up
                     </Link>
                   </div>
                 </SheetContent>
@@ -141,18 +149,24 @@ export default function LandingPage() {
             </div>
 
             {/* Right Asymmetrical Header Section */}
-            <div className="hidden md:flex w-1/2 justify-end items-center pr-6 gap-4 ml-auto">
+            <div className="hidden md:flex w-1/2 justify-end items-center pr-6 gap-3 ml-auto">
               <Link 
                 href="/login"
                 className={cn(
-                  buttonVariants({ variant: "outline" }),
-                  "cursor-pointer bg-white/80 dark:bg-zinc-950/80 hover:bg-white dark:hover:bg-zinc-950 border border-slate-200/80 dark:border-zinc-800 rounded-full py-0 pl-4 pr-1 h-11 flex items-center gap-1 group shadow-sm transition-all duration-300"
+                  buttonVariants({ variant: "ghost" }),
+                  "text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-200 cursor-pointer"
                 )}
               >
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-200">Access Portal</span>
-                <div className="rounded-full flex items-center justify-center bg-slate-900 dark:bg-white text-white dark:text-slate-900 w-9 h-9 group-hover:scale-110 transition-transform duration-300">
-                  <ArrowUpRight className="w-4 h-4" />
-                </div>
+                Log In
+              </Link>
+              <Link 
+                href="/register"
+                className={cn(
+                  buttonVariants({ variant: "default" }),
+                  "bg-blue-600 hover:bg-blue-700 text-white rounded-full px-5 py-2 h-10 flex items-center justify-center text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer"
+                )}
+              >
+                Sign Up
               </Link>
             </div>
           </header>
