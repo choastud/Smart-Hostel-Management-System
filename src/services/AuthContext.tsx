@@ -12,7 +12,6 @@ interface AuthContextType {
   login: (email: string, role: UserRole) => Promise<{ success: boolean; message?: string }>;
   register: (email: string, name: string, role: UserRole, phone?: string, gender?: 'male' | 'female') => Promise<{ success: boolean; message?: string }>;
   signOut: () => Promise<void>;
-  switchRole: (role: UserRole) => Promise<void>;
   reloadUser: () => Promise<void>;
 }
 
@@ -114,30 +113,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const switchRole = async (role: UserRole) => {
-    const matchingAccount = TEST_ACCOUNTS.find(a => a.role === role);
-    if (matchingAccount) {
-      const res = await login(matchingAccount.email, role);
-      if (res.success) {
-        // Force redirect to the correct role-specific dashboard
-        const rolePaths: Record<string, string> = {
-          student: '/dashboard/student',
-          warden: '/dashboard/warden',
-          admin: '/dashboard/warden',
-          security: '/dashboard/security',
-          mess_manager: '/dashboard/mess-manager',
-        };
-        router.push(rolePaths[role] || '/dashboard');
-      }
-    } else {
-      const mockEmail = `${role}@hostel.com`;
-      const res = await login(mockEmail, role);
-      if (res.success) {
-        router.push('/dashboard');
-      }
-    }
-  };
-
   const reloadUser = async () => {
     const db = getDbService();
     const currentUser = await db.getCurrentUser();
@@ -145,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, dbMode, login, register, signOut, switchRole, reloadUser }}>
+    <AuthContext.Provider value={{ user, loading, dbMode, login, register, signOut, reloadUser }}>
       {children}
     </AuthContext.Provider>
   );

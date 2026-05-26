@@ -4,18 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../services/AuthContext';
 import { getDbService } from '../services/db';
-import { Notification, UserRole } from '../types';
+import { Notification } from '../types';
 import { 
-  Bell, CheckCircle2, AlertTriangle, Coins, Key, 
-  HelpCircle, Sparkles, Terminal, ChevronDown
+  Bell, CheckCircle2, AlertTriangle, Coins, 
+  Sparkles
 } from 'lucide-react';
 
 export default function Header() {
   const pathname = usePathname();
-  const { user, dbMode, switchRole } = useAuth();
+  const { user, dbMode } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
 
   // Fetch user notifications
   const fetchNotifications = async () => {
@@ -65,14 +64,6 @@ export default function Header() {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  const roles: { role: UserRole; name: string }[] = [
-    { role: 'student', name: 'Resident Student' },
-    { role: 'warden', name: 'Block Warden' },
-    { role: 'admin', name: 'Hostel Admin' },
-    { role: 'security', name: 'Gate Security' },
-    { role: 'mess_manager', name: 'Mess Manager' },
-  ];
-
   const getNotifIcon = (type: Notification['type']) => {
     switch (type) {
       case 'complaint': return <AlertTriangle className="text-orange-500" size={16} />;
@@ -102,51 +93,10 @@ export default function Header() {
           {dbMode === 'supabase' ? 'Supabase Database' : 'LocalStorage Offline Fallback'}
         </div>
 
-        {/* Development Role Switcher */}
-        <div className="relative">
-          <button
-            onClick={() => {
-              setShowRoleSwitcher(!showRoleSwitcher);
-              setShowNotifications(false);
-            }}
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-xl text-xs font-semibold transition-colors"
-          >
-            <Terminal size={14} className="text-blue-500" />
-            Switch Role
-            <ChevronDown size={12} />
-          </button>
-
-          {showRoleSwitcher && (
-            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-lg py-2 z-50">
-              <div className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-zinc-700 pb-2">
-                Simulate Account role
-              </div>
-              {roles.map(r => (
-                <button
-                  key={r.role}
-                  onClick={async () => {
-                    await switchRole(r.role);
-                    setShowRoleSwitcher(false);
-                  }}
-                  className={`w-full text-left px-4 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-zinc-700/50 flex items-center justify-between ${
-                    user.role === r.role ? 'text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20' : 'text-slate-700 dark:text-zinc-300'
-                  }`}
-                >
-                  {r.name}
-                  {user.role === r.role && <CheckCircle2 size={12} />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* Notification Bell */}
         <div className="relative">
           <button
-            onClick={() => {
-              setShowNotifications(!showNotifications);
-              setShowRoleSwitcher(false);
-            }}
+            onClick={() => setShowNotifications(!showNotifications)}
             className="p-2.5 text-slate-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800 rounded-xl relative transition-all"
           >
             <Bell size={20} />
