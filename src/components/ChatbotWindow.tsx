@@ -152,15 +152,28 @@ export default function ChatbotWindow({ onClose }: ChatbotWindowProps) {
 
   const addMessage = (msg: ChatbotMessage) => {
     setMessages((prev) => [...prev, msg]);
-    if (supabase) {
-      supabase.from('chatbot_messages').insert([msg]).then(({ error }) => {
-        if (error) console.error("Error inserting message to supabase:", error);
-      });
-    } else {
-      const stored = localStorage.getItem('chatbot_messages');
-      const list = stored ? JSON.parse(stored) : [];
-      list.push(msg);
-      localStorage.setItem('chatbot_messages', JSON.stringify(list));
+    try {
+      if (supabase) {
+        supabase.from('chatbot_messages').insert([msg]).then(({ error }) => {
+          if (error) {
+            console.warn("Could not save message to Supabase (using local fallback):", error);
+            // Save to local storage as fallback
+            const stored = localStorage.getItem('chatbot_messages');
+            const list = stored ? JSON.parse(stored) : [];
+            if (!list.some((m: any) => m.id === msg.id)) {
+              list.push(msg);
+              localStorage.setItem('chatbot_messages', JSON.stringify(list));
+            }
+          }
+        });
+      } else {
+        const stored = localStorage.getItem('chatbot_messages');
+        const list = stored ? JSON.parse(stored) : [];
+        list.push(msg);
+        localStorage.setItem('chatbot_messages', JSON.stringify(list));
+      }
+    } catch (e) {
+      console.warn("Failed to persist message:", e);
     }
   };
 
