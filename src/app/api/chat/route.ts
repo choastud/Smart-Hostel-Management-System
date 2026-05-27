@@ -69,10 +69,19 @@ ${contextText}`;
       clientApiKey = '';
     }
     
-    // Check multiple env variables: OpenAI, gXAI, or XAI keys
+    // Check multiple env variables: OpenAI, Groq, gXAI, or XAI keys
     const openAiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
-    const xAiKey = process.env.gXAI_API_KEY || process.env.XAI_API_KEY;
-    const apiKey = clientApiKey || openAiKey || xAiKey;
+    const groqEnvKey = process.env.GROQ_API_KEY || process.env.NEXT_PUBLIC_GROQ_API_KEY;
+    const rawXAiKey = process.env.gXAI_API_KEY || process.env.XAI_API_KEY;
+    
+    // Auto-detect and auto-correct Groq key copy-paste typos (prepending 'g' to 'sk_gSCg...')
+    let xAiKey = rawXAiKey;
+    let groqKeyFromXai = '';
+    if (rawXAiKey && rawXAiKey.startsWith('sk_gSCg')) {
+      groqKeyFromXai = 'g' + rawXAiKey;
+    }
+
+    const apiKey = clientApiKey || openAiKey || groqEnvKey || groqKeyFromXai || xAiKey;
 
     if (!apiKey) {
       // -------------------------------------------------------------
@@ -170,10 +179,15 @@ ${contextText}`;
     let apiUrl = 'https://api.openai.com/v1/chat/completions';
     let modelName = 'gpt-4o-mini';
 
-    // Auto-detect if key is from xAI/Grok (key starts with sk_gSCg... or contains xai, or env xAiKey is active)
-    const isXAi = apiKey.startsWith('sk_gSCg') || apiKey.toLowerCase().includes('xai') || !!xAiKey;
+    // Auto-detect if key is from Groq (starts with gsk_ or detected through raw xAi key correction)
+    const isGroq = apiKey.startsWith('gsk_') || !!groqEnvKey || !!groqKeyFromXai;
+    // Auto-detect if key is from xAI/Grok (starts with xai-)
+    const isXAi = apiKey.startsWith('xai-') || (!!xAiKey && !isGroq);
 
-    if (isXAi) {
+    if (isGroq) {
+      apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
+      modelName = 'llama-3.3-70b-versatile';
+    } else if (isXAi) {
       apiUrl = 'https://api.x.ai/v1/chat/completions';
       modelName = 'grok-beta';
     }
