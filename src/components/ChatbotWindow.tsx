@@ -1,20 +1,28 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, Mic, MicOff, Loader } from 'lucide-react';
-import { useSupabaseClient } from '@/services/supabaseClient';
+import { getSupabaseClient } from '@/services/supabaseClient';
 import { useAI } from '@/context/AIContext';
 import { ChatbotMessage } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
 
 interface ChatbotWindowProps {
   onClose: () => void;
 }
+
+const generateUUID = () => {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
 
 export default function ChatbotWindow({ onClose }: ChatbotWindowProps) {
   const [messages, setMessages] = useState<ChatbotMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
-  const supabase = useSupabaseClient();
+  const supabase = getSupabaseClient();
   const { apiKey } = useAI();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -26,26 +34,53 @@ export default function ChatbotWindow({ onClose }: ChatbotWindowProps) {
   // Load chat history on mount
   useEffect(() => {
     async function fetchHistory() {
-      const { data, error } = await supabase
-        .from('chatbot_messages')
-        .select('*')
-        .order('created_at', { ascending: true });
-      if (!error && data) setMessages(data as ChatbotMessage[]);
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('chatbot_messages')
+          .select('*')
+          .order('created_at', { ascending: true });
+        if (!error && data) {
+          setMessages(data as ChatbotMessage[]);
+          return;
+        }
+      }
+      
+      // Fallback to local storage
+      const stored = localStorage.getItem('chatbot_messages');
+      if (stored) {
+        setMessages(JSON.parse(stored));
+      }
     }
     fetchHistory();
   }, [supabase]);
 
   const addMessage = (msg: ChatbotMessage) => {
     setMessages((prev) => [...prev, msg]);
-    // Persist to Supabase
-    supabase.from('chatbot_messages').insert([msg]);
+    // Persist to Supabase if active, otherwise local storage
+    if (supabase) {
+      supabase.from('chatbot_messages').insert([msg]).then(({ error }) => {
+        if (error) console.error("Error inserting message to supabase:", error);
+      });
+    } else {
+      const stored = localStorage.getItem('chatbot_messages');
+      const list = stored ? JSON.parse(stored) : [];
+      list.push(msg);
+      localStorage.setItem('chatbot_messages', JSON.stringify(list));
+    }
   };
 
-  const handleSend = async () {
+  const handleSend = async () => {
     if (!input.trim()) return;
+    
+    let userId = 'anonymous';
+    if (supabase) {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user?.id) userId = data.user.id;
+    }
+
     const userMsg: ChatbotMessage = {
-      id: uuidv4(),
-      user_id: (await supabase.auth.getUser()).data?.user?.id || 'anonymous',
+      id: generateUUID(),
+      user_id: userId,
       role: 'user',
       content: input.trim(),
       created_at: new Date().toISOString(),
@@ -75,7 +110,7 @@ export default function ChatbotWindow({ onClose }: ChatbotWindowProps) {
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let assistantContent = '';
-      const assistantMsgId = uuidv4();
+      const assistantMsgId = generateUUID();
       const assistantMsg: ChatbotMessage = {
         id: assistantMsgId,
         user_id: 'assistant',
@@ -111,9 +146,22 @@ export default function ChatbotWindow({ onClose }: ChatbotWindowProps) {
       }
 
       // Persist final assistant message
-      await supabase.from('chatbot_messages').upsert([
-        { ...assistantMsg, content: assistantContent, created_at: new Date().toISOString() },
-      ]);
+      if (supabase) {
+        await supabase.from('chatbot_messages').upsert([
+          { ...assistantMsg, content: assistantContent, created_at: new Date().toISOString() },
+        ]);
+      } else {
+        const stored = localStorage.getItem('chatbot_messages');
+        const list = stored ? JSON.parse(stored) : [];
+        const index = list.findIndex((m: any) => m.id === assistantMsgId);
+        if (index > -1) {
+          list[index].content = assistantContent;
+          list[index].created_at = new Date().toISOString();
+        } else {
+          list.push({ ...assistantMsg, content: assistantContent, created_at: new Date().toISOString() });
+        }
+        localStorage.setItem('chatbot_messages', JSON.stringify(list));
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -164,11 +212,13 @@ export default function ChatbotWindow({ onClose }: ChatbotWindowProps) {
             className={`flex ${msg.role === 'assistant' ? 'justify-start' : 'justify-end'}`}
           >
             <div
-              className={`max-w-xs px-3 py-2 rounded-lg text-sm ${{
-                assistant: 'bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-200',
-                user: 'bg-blue-600 text-white',
-                system: 'bg-gray-200 dark:bg-zinc-700 text-gray-800 dark:text-gray-200',
-              }[msg.role]}`}
+              className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
+                msg.role === 'assistant' 
+                  ? 'bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-gray-200' 
+                  : msg.role === 'user' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 dark:bg-zinc-700 text-gray-800 dark:text-gray-200'
+              }`}
             >
               {msg.content}
             </div>
