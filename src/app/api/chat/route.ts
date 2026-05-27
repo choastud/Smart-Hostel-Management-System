@@ -62,7 +62,12 @@ ${contextText}`;
 
     // Get API Key from authorization header or env variables
     const authHeader = req.headers.get('Authorization');
-    const clientApiKey = authHeader ? authHeader.replace('Bearer ', '').trim() : '';
+    let clientApiKey = authHeader ? authHeader.replace('Bearer ', '').trim() : '';
+    
+    // Safety check: if client sent literal string "undefined" or "null", treat it as empty
+    if (clientApiKey.toLowerCase() === 'undefined' || clientApiKey.toLowerCase() === 'null') {
+      clientApiKey = '';
+    }
     
     // Check multiple env variables: OpenAI, gXAI, or XAI keys
     const openAiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
