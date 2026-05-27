@@ -3,8 +3,18 @@ import { getDbServer } from '@/lib/dbServer';
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      return NextResponse.json({ error: 'Invalid JSON request body' }, { status: 400 });
+    }
     
+    const { messages } = body;
+    if (!messages || !Array.isArray(messages)) {
+      return NextResponse.json({ error: 'Missing or invalid messages parameter' }, { status: 400 });
+    }
+
     // Fetch db service
     const db = getDbServer(req);
     
@@ -56,7 +66,95 @@ ${contextText}`;
     const apiKey = clientApiKey || process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'OpenAI API key not configured on server or client.' }, { status: 500 });
+      // -------------------------------------------------------------
+      // MOCK AI STREAMING RESPONSE MODE (Fallback when OpenAI Key is missing)
+      // -------------------------------------------------------------
+      const userMessage = messages[messages.length - 1]?.content?.toLowerCase() || '';
+      let reply = "Hello! I am AuraHost's database copilot. *(Running in Database Demo Mode because no OpenAI API key is configured in .env.local)*.\n\n";
+
+      if (userMessage.includes('room') || userMessage.includes('vacant') || userMessage.includes('occupancy') || userMessage.includes('where')) {
+        const totalRooms = rooms.length;
+        const occupiedSlots = rooms.reduce((acc: number, r: any) => acc + (r.occupied || 0), 0);
+        const vacantRooms = rooms.filter((r: any) => r.occupied < r.capacity);
+        reply += `### Room Occupancy Report\n- **Total Rooms**: ${totalRooms}\n- **Occupied Bed Slots**: ${occupiedSlots}\n- **Vacant Rooms**: ${vacantRooms.length} rooms are currently vacant.\n\nWould you like me to help allocate a room or display names of occupants?`;
+      } else if (userMessage.includes('attendance') || userMessage.includes('absent') || userMessage.includes('present') || userMessage.includes('name')) {
+        const presentList = attendance.filter((a: any) => a.status === 'present');
+        const absentList = attendance.filter((a: any) => a.status === 'absent');
+        
+        reply += `### Attendance & Roster Report\n- **Present Students**: ${presentList.length}\n- **Absent Students**: ${absentList.length}\n\n`;
+        if (presentList.length > 0) {
+          reply += `Here are the active student records present:\n`;
+          presentList.forEach((p: any) => {
+            reply += `- Student ID: **${p.student_id}** (Status: Present, Check-in: ${p.check_in ? new Date(p.check_in).toLocaleTimeString() : 'N/A'})\n`;
+          });
+        }
+      } else if (userMessage.includes('menu') || userMessage.includes('mess') || userMessage.includes('food') || userMessage.includes('eat')) {
+        reply += `### Weekly Mess Menu\n`;
+        if (messMenu.length === 0) {
+          reply += `*No menu items registered.*`;
+        } else {
+          messMenu.forEach((m: any) => {
+            reply += `- **${m.day_of_week}**:\n  - Breakfast: *${m.breakfast || 'N/A'}*\n  - Lunch: *${m.lunch || 'N/A'}*\n  - Dinner: *${m.dinner || 'N/A'}*\n`;
+          });
+        }
+      } else if (userMessage.includes('complaint') || userMessage.includes('issue') || userMessage.includes('broken')) {
+        const pending = complaints.filter((c: any) => c.status === 'pending');
+        const inProgress = complaints.filter((c: any) => c.status === 'in_progress');
+        reply += `### Complaint Summary\n- **Pending**: ${pending.length}\n- **In Progress**: ${inProgress.length}\n\n`;
+        if (pending.length > 0) {
+          reply += `Pending Issues:\n`;
+          pending.forEach((c: any) => {
+            reply += `- **${c.category}**: "${c.description}" *(ID: ${c.id})*\n`;
+          });
+        }
+      } else if (userMessage.includes('visitor') || userMessage.includes('guest')) {
+        const pending = visitors.filter((v: any) => v.status === 'pending');
+        reply += `### Visitor Logs & Entries\n- Total Entry Logs: **${visitors.length}**\n- Pending Warden Approvals: **${pending.length}**\n\n`;
+        if (pending.length > 0) {
+          reply += `Pending Requests:\n`;
+          pending.forEach((v: any) => {
+            reply += `- **${v.visitor_name}** (Purpose: ${v.purpose || 'Personal'}, Phone: ${v.phone})\n`;
+          });
+        }
+      } else if (userMessage.includes('fee') || userMessage.includes('due') || userMessage.includes('money')) {
+        const unpaid = fees.filter((f: any) => f.payment_status === 'unpaid');
+        reply += `### Outstanding Fees\nThere are currently **${unpaid.length}** unpaid fee entries.\n`;
+        unpaid.forEach((f: any) => {
+          reply += `- Student ID: **${f.student_id}** — Amount: **$${f.amount}** (Due: ${f.due_date})\n`;
+        });
+      } else {
+        reply += `I am connected to the live database. You can ask me:\n- “*Which rooms are vacant?*”\n- “*What is the mess menu?*”\n- “*List pending complaints*”\n- “*Show attendance and names*”\n- “*Check unpaid fees*”`;
+      }
+
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          const words = reply.split(' ');
+          for (let i = 0; i < words.length; i++) {
+            const chunk = {
+              choices: [
+                {
+                  delta: {
+                    content: (i === 0 ? "" : " ") + words[i]
+                  }
+                }
+              ]
+            };
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+            await new Promise((resolve) => setTimeout(resolve, 30));
+          }
+          controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+          controller.close();
+        }
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+        },
+      });
     }
 
     // Call OpenAI Chat API
