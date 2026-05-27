@@ -165,28 +165,24 @@ export default function ChatbotWindow({ onClose }: ChatbotWindowProps) {
   };
 
   const handleSend = async (customText?: string) => {
-    const textToSend = customText || input;
-    if (!textToSend.trim()) return;
-    
-    let userId = 'anonymous';
-    if (supabase) {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user?.id) userId = data.user.id;
-    }
-
-    const userMsg: ChatbotMessage = {
-      id: generateUUID(),
-      user_id: userId,
-      role: 'user',
-      content: textToSend.trim(),
-      created_at: new Date().toISOString(),
-    };
-    
-    addMessage(userMsg);
-    if (!customText) setInput('');
-    setLoading(true);
-
     try {
+      const textToSend = customText || input;
+      if (!textToSend.trim()) return;
+      
+      const userId = user?.id || 'anonymous';
+
+      const userMsg: ChatbotMessage = {
+        id: generateUUID(),
+        user_id: userId,
+        role: 'user',
+        content: textToSend.trim(),
+        created_at: new Date().toISOString(),
+      };
+      
+      addMessage(userMsg);
+      if (!customText) setInput('');
+      setLoading(true);
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {

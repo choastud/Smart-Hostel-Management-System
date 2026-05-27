@@ -31,12 +31,12 @@ interface LocalDbStructure {
 // -------------------------------------------------------------
 // FILE SYSTEM DB HELPERS
 // -------------------------------------------------------------
+let memoryDbCache: LocalDbStructure | null = null;
+
 function readLocalDb(): LocalDbStructure {
+  if (memoryDbCache) return memoryDbCache;
+  
   if (!fs.existsSync(DB_FILE)) {
-    const parentDir = path.dirname(DB_FILE);
-    if (!fs.existsSync(parentDir)) {
-      fs.mkdirSync(parentDir, { recursive: true });
-    }
     const initialData: LocalDbStructure = {
       profiles: SEED_PROFILES,
       hostels: SEED_HOSTELS,
@@ -50,7 +50,16 @@ function readLocalDb(): LocalDbStructure {
       mess_feedback: SEED_MESS_FEEDBACK,
       notifications: SEED_NOTIFICATIONS
     };
-    fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
+    try {
+      const parentDir = path.dirname(DB_FILE);
+      if (!fs.existsSync(parentDir)) {
+        fs.mkdirSync(parentDir, { recursive: true });
+      }
+      fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
+    } catch (e) {
+      console.warn("Could not write initial local_db.json (filesystem might be read-only):", e);
+    }
+    memoryDbCache = initialData;
     return initialData;
   }
   try {
@@ -80,8 +89,11 @@ function readLocalDb(): LocalDbStructure {
       });
     }
     if (updated) {
-      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+      try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+      } catch (e) {}
     }
+    memoryDbCache = data;
     return data;
   } catch (error) {
     console.error('Error reading local server db file, resetting to seeds:', error);
@@ -98,13 +110,21 @@ function readLocalDb(): LocalDbStructure {
       mess_feedback: SEED_MESS_FEEDBACK,
       notifications: SEED_NOTIFICATIONS
     };
-    fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
+    try {
+      fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
+    } catch (e) {}
+    memoryDbCache = initialData;
     return initialData;
   }
 }
 
 function writeLocalDb(data: LocalDbStructure): void {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  memoryDbCache = data;
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (error) {
+    console.warn('Could not write to local server db file (read-only filesystem):', error);
+  }
 }
 
 // Helper to write changes to specific collections in local file DB
