@@ -62,7 +62,10 @@ ${contextText}`;
 
     // Get API Key from authorization header or env variables
     const authHeader = req.headers.get('Authorization');
-    let clientApiKey = authHeader ? authHeader.replace('Bearer ', '').trim() : '';
+    let clientApiKey = '';
+    if (authHeader) {
+      clientApiKey = authHeader.replace(/^Bearer\s*/i, '').trim();
+    }
     
     // Safety check: if client sent literal string "undefined" or "null", treat it as empty
     if (clientApiKey.toLowerCase() === 'undefined' || clientApiKey.toLowerCase() === 'null') {
