@@ -11,6 +11,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import ThemeToggle from "../components/ThemeToggle";
 
 export default function LandingPage() {
   const navigation = [
@@ -53,13 +54,18 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-brand-beige dark:bg-brand-charcoal text-slate-800 dark:text-slate-100 transition-colors duration-300">
+    <div className="min-h-screen flex flex-col bg-[var(--background)] text-slate-800 dark:text-slate-100 transition-colors duration-300 relative overflow-hidden grid-bg">
       
+      {/* Decorative Floating Blobs for Creative Visuals */}
+      <div className="floating-blob blob-blue w-[350px] h-[350px] sm:w-[500px] sm:h-[500px] -top-40 -left-40 opacity-15" />
+      <div className="floating-blob blob-indigo w-[400px] h-[400px] sm:w-[600px] sm:h-[600px] bottom-10 -right-40 opacity-12" />
+      <div className="floating-blob blob-violet w-[300px] h-[300px] top-[35%] left-[60%] -translate-x-1/2 opacity-10" />
+
       {/* CommerceHero Container */}
-      <div className="w-full relative container px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl flex-1 flex flex-col pt-6 pb-16">
+      <div className="w-full relative container px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl flex-1 flex flex-col pt-6 pb-16 z-10">
         
         {/* Animated Inner Header / Section Panel */}
-        <div className="bg-slate-50/60 dark:bg-zinc-900/30 border border-slate-200/50 dark:border-zinc-800/80 rounded-3xl relative overflow-hidden shadow-sm flex-1 flex flex-col justify-between">
+        <div className="bg-white/60 dark:bg-zinc-900/35 border border-slate-200/55 dark:border-zinc-800/80 rounded-3xl relative overflow-hidden shadow-xs flex-1 flex flex-col justify-between backdrop-blur-md">
           
           <header className="flex items-center w-full z-30">
             {/* Left Header Section */}
@@ -125,6 +131,10 @@ export default function LandingPage() {
                   </nav>
                   <Separator className="mx-6" />
                   <div className="p-6 flex flex-col gap-3">
+                    <div className="flex items-center justify-between mb-2 px-2">
+                      <span className="text-xs font-bold uppercase text-slate-400">Appearance</span>
+                      <ThemeToggle />
+                    </div>
                     <Link 
                       href="/login"
                       className={cn(
@@ -150,6 +160,7 @@ export default function LandingPage() {
 
             {/* Right Asymmetrical Header Section */}
             <div className="hidden md:flex w-1/2 justify-end items-center pr-6 gap-3 ml-auto">
+              <ThemeToggle />
               <Link 
                 href="/login"
                 className={cn(
@@ -173,10 +184,10 @@ export default function LandingPage() {
 
           {/* Animated Hero Content Section */}
           <motion.section
-            className="w-full px-6 py-20 md:py-28 flex-1 flex flex-col justify-center text-center"
-            initial={{ opacity: 0, y: 20 }}
+            className="w-full px-6 py-16 md:py-24 flex-1 flex flex-col justify-center text-center"
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <div className="max-w-4xl mx-auto space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider rounded-full border border-blue-100/50 dark:border-blue-900/30">
@@ -243,10 +254,15 @@ export default function LandingPage() {
           {categories.map((category, index) => (
             <motion.div
               key={category.title}
-              className="group relative bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-3xl p-5 min-h-[260px] sm:min-h-[290px] w-full overflow-hidden border border-slate-200/50 dark:border-zinc-800/60 transition-all duration-500 shadow-sm hover:shadow-md hover:border-slate-350 dark:hover:border-zinc-700/80"
-              initial={{ opacity: 0, y: 20 }}
+              className="group relative bg-white/70 dark:bg-zinc-900/40 backdrop-blur-md rounded-3xl p-5 min-h-[260px] sm:min-h-[290px] w-full overflow-hidden border border-slate-200/50 dark:border-zinc-800/60 shadow-sm hover:shadow-md hover:border-slate-350 dark:hover:border-zinc-700/80 cursor-pointer"
+              initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
+              whileHover={{ y: -8, scale: 1.02, boxShadow: "0 20px 25px -5px rgba(59, 130, 246, 0.1), 0 10px 10px -5px rgba(59, 130, 246, 0.04)" }}
+              transition={{ 
+                default: { duration: 0.5, delay: index * 0.1 },
+                scale: { type: "spring", stiffness: 300, damping: 15 },
+                y: { type: "spring", stiffness: 300, damping: 15 }
+              }}
             >
               <Link href={category.href} className="absolute inset-0 z-20 flex flex-col justify-between p-6">
                 <div>
@@ -260,7 +276,7 @@ export default function LandingPage() {
                   <img
                     src={category.image}
                     alt={category.title}
-                    className="w-full max-w-[120px] sm:max-w-[130px] h-auto object-contain opacity-90 group-hover:scale-115 group-hover:rotate-6 transition-all duration-500 select-none pointer-events-none"
+                    className="w-full max-w-[120px] sm:max-w-[130px] h-auto object-contain opacity-90 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 select-none pointer-events-none"
                   />
                 </div>
 

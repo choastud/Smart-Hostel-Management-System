@@ -2,6 +2,7 @@
 -- Execute this script in the SQL Editor of your Supabase Project dashboard.
 
 -- Drop existing tables if they exist to start fresh
+DROP TABLE IF EXISTS chatbot_messages CASCADE;
 DROP TABLE IF EXISTS notifications CASCADE;
 DROP TABLE IF EXISTS mess_feedback CASCADE;
 DROP TABLE IF EXISTS mess_menu CASCADE;
@@ -132,6 +133,15 @@ CREATE TABLE notifications (
   message TEXT NOT NULL,
   type TEXT CHECK (type IN ('visitor', 'fee', 'complaint', 'announcement')),
   is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 12. CHATBOT MESSAGES TABLE
+CREATE TABLE chatbot_messages (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES profiles(id) ON DELETE CASCADE,
+  role TEXT CHECK (role IN ('user', 'assistant', 'system')) NOT NULL,
+  content TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

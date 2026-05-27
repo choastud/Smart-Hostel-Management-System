@@ -8,6 +8,7 @@ import {
   LayoutDashboard, DoorOpen, CalendarCheck, AlertCircle, 
   Users, Utensils, CreditCard, Settings, LogOut, ShieldAlert
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface SidebarItem {
   name: string;
@@ -61,23 +62,23 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col h-full">
+    <aside className="w-64 bg-white border-r border-slate-200 dark:bg-zinc-950 dark:border-zinc-900 flex flex-col h-full transition-all duration-300">
       {/* Brand Logo */}
-      <div className="p-6 border-b border-slate-200 dark:border-zinc-800 flex items-center gap-3">
+      <div className="p-6 border-b border-slate-200/80 dark:border-zinc-900 flex items-center gap-3">
         <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
           AH
         </div>
         <div>
-          <h1 className="font-bold text-lg leading-tight tracking-tight">AuraHost</h1>
-          <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Smart Ecosystem</span>
+          <h1 className="font-bold text-lg leading-tight tracking-tight text-slate-800 dark:text-zinc-100">AuraHost</h1>
+          <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-semibold uppercase tracking-wider">Smart Ecosystem</span>
         </div>
       </div>
 
       {/* User Info Badge */}
-      <div className="p-4 mx-4 my-4 bg-slate-50 border border-slate-100 dark:bg-zinc-800/40 dark:border-zinc-800/80 rounded-xl">
-        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Role Profile</div>
-        <div className="font-bold text-sm text-slate-800 dark:text-zinc-200 truncate mt-1">{user.name}</div>
-        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 mt-2 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-medium rounded-full">
+      <div className="p-4 mx-4 my-4 bg-slate-50/70 border border-slate-100 dark:bg-zinc-900/60 dark:border-zinc-900/80 rounded-xl">
+        <div className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Role Profile</div>
+        <div className="font-extrabold text-sm text-slate-800 dark:text-zinc-200 truncate mt-1">{user.name}</div>
+        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 mt-2 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 text-xs font-semibold rounded-full border border-blue-100/50 dark:border-blue-900/20">
           <ShieldAlert size={10} />
           {roleLabels[user.role] || user.role}
         </div>
@@ -90,30 +91,35 @@ export default function Sidebar() {
           const Icon = item.icon;
 
           return (
-            <Link
+            <motion.div
               key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3.5 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-250 group ${
-                isActive
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200'
-              }`}
+              whileHover={{ x: 4 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
             >
-              <Icon 
-                size={18} 
-                className={`transition-transform duration-250 group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-zinc-200'}`} 
-              />
-              {item.name}
-            </Link>
+              <Link
+                href={item.href}
+                className={`flex items-center gap-3.5 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${
+                  isActive
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/15'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-900/80 dark:hover:text-zinc-250'
+                }`}
+              >
+                <Icon 
+                  size={18} 
+                  className={`transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600 dark:text-zinc-500 dark:group-hover:text-zinc-350'}`} 
+                />
+                {item.name}
+              </Link>
+            </motion.div>
           );
         })}
       </nav>
 
       {/* Sign Out Button */}
-      <div className="p-4 border-t border-slate-200 dark:border-zinc-800">
+      <div className="p-4 border-t border-slate-250 dark:border-zinc-900">
         <button
           onClick={signOut}
-          className="flex items-center gap-3.5 w-full px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 rounded-xl transition-colors duration-200"
+          className="flex items-center gap-3.5 w-full px-4 py-3 text-sm font-semibold text-red-650 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 rounded-xl transition-all duration-200 cursor-pointer"
         >
           <LogOut size={18} />
           Sign Out

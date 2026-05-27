@@ -117,4 +117,13 @@ export interface Notification {
   type: 'complaint' | 'fee' | 'visitor' | 'announcement';
   is_read: boolean;
   created_at: string;
+} 
+
+export interface ChatbotMessage {
+  id: string;
+  user_id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  created_at: string;
 }
+

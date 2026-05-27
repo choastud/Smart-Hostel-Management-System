@@ -9,6 +9,7 @@ import {
   Bell, CheckCircle2, AlertTriangle, Coins, 
   Sparkles
 } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 export default function Header() {
   const pathname = usePathname();
@@ -74,7 +75,7 @@ export default function Header() {
   };
 
   return (
-    <header className="h-20 bg-white border-b border-slate-200 dark:bg-zinc-900 dark:border-zinc-800 px-8 flex items-center justify-between sticky top-0 z-40">
+    <header className="h-20 bg-white border-b border-slate-200 dark:bg-zinc-900 dark:border-zinc-800 px-8 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md bg-white/90 dark:bg-zinc-900/90 transition-all duration-300">
       {/* Title */}
       <div>
         <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">{getPageTitle()}</h2>
@@ -84,24 +85,27 @@ export default function Header() {
       {/* Action Controls */}
       <div className="flex items-center gap-4 relative">
         {/* DB Connection Badge */}
-        <div className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+        <div className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-xs ${
           dbMode === 'supabase'
-            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30'
-            : 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30'
+            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-250 dark:border-emerald-900/30'
+            : 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border border-amber-250 dark:border-amber-900/30'
         }`}>
-          <div className={`w-2 h-2 rounded-full ${dbMode === 'supabase' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-          {dbMode === 'supabase' ? 'Supabase Database' : 'LocalStorage Offline Fallback'}
+          <div className={`w-2 h-2 rounded-full ${dbMode === 'supabase' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+          {dbMode === 'supabase' ? 'Supabase Cloud Link' : 'Offline Session Mode'}
         </div>
+
+        {/* Theme Toggle Button */}
+        <ThemeToggle />
 
         {/* Notification Bell */}
         <div className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="p-2.5 text-slate-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800 rounded-xl relative transition-all"
+            className="p-2.5 text-slate-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800 rounded-xl relative transition-all border border-slate-200/60 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
           >
-            <Bell size={20} />
+            <Bell size={18} />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white animate-pulse">
+              <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white animate-bounce">
                 {unreadCount}
               </span>
             )}
