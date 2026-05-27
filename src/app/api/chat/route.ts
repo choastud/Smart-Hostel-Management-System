@@ -81,7 +81,7 @@ ${contextText}`;
       groqKeyFromXai = 'g' + rawXAiKey;
     }
 
-    const apiKey = clientApiKey || openAiKey || groqEnvKey || groqKeyFromXai || xAiKey;
+    const apiKey = clientApiKey || groqEnvKey || groqKeyFromXai || xAiKey || openAiKey;
 
     if (!apiKey) {
       // -------------------------------------------------------------
