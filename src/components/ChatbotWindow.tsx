@@ -200,7 +200,8 @@ export default function ChatbotWindow({ onClose }: ChatbotWindowProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch from chat API');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server responded with status ${response.status}`);
       }
 
       if (!response.body) throw new Error('No stream');
@@ -267,7 +268,7 @@ export default function ChatbotWindow({ onClose }: ChatbotWindowProps) {
         }
         localStorage.setItem('chatbot_messages', JSON.stringify(list));
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       // fallback response
       const fallbackId = generateUUID();
@@ -275,7 +276,7 @@ export default function ChatbotWindow({ onClose }: ChatbotWindowProps) {
         id: fallbackId,
         user_id: 'assistant',
         role: 'assistant',
-        content: "I'm sorry, I'm having trouble reaching the database or AI engine right now. Please verify your internet connection and API key configurations.",
+        content: `I'm sorry, I'm having trouble reaching the database or AI engine: ${err.message || 'Unknown error'}. Please verify your configurations.`,
         created_at: new Date().toISOString()
       });
     } finally {
