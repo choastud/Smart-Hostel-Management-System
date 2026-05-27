@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import { AIProvider } from "@/context/AIContext";
+import { AuthProvider } from "@/services/AuthContext";
 import ChatbotButton from "@/components/ChatbotButton";
 
 const outfit = Outfit({
@@ -47,7 +48,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-[family-name:var(--font-outfit)] bg-[var(--background)] text-[var(--foreground)] transition-colors duration-300">
-        {children}<ChatbotButton />
+        <AuthProvider>
+          {children}
+          <ChatbotButton />
+        </AuthProvider>
       </body>
     </html>
     </AIProvider>
