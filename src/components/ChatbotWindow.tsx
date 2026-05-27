@@ -74,23 +74,23 @@ function parseInlineMarkdown(text: string): React.ReactNode[] {
 // Role-based smart suggestions
 const SUGGESTIONS: Record<string, string[]> = {
   student: [
-    "Which rooms are vacant?",
-    "Show my attendance",
-    "What is today’s mess menu?",
-    "Who are my roommates?",
-    "When is my hostel fee due?"
+    "🚪 Which rooms are vacant?",
+    "📅 Show my attendance",
+    "🍔 What is today’s mess menu?",
+    "👥 Who are my roommates?",
+    "💳 When is my hostel fee due?"
   ],
   admin: [
-    "How many students are registered?",
-    "List all complaints and status",
-    "Show latest visitor logs",
-    "What is the hostel occupancy?"
+    "📊 How many students are registered?",
+    "⚠️ List all complaints and status",
+    "📝 Show latest visitor logs",
+    "🏢 What is the hostel occupancy?"
   ],
   warden: [
-    "List pending visitor requests",
-    "List unresolved complaints",
-    "Who is absent today?",
-    "Show room allocations"
+    "⏳ List pending visitor requests",
+    "🚫 List unresolved complaints",
+    "🔍 Who is absent today?",
+    "🛏️ Show room allocations"
   ]
 };
 
@@ -384,9 +384,11 @@ export default function ChatbotWindow({ onClose }: ChatbotWindowProps) {
                 <MessageSquare size={22} />
               </div>
               <div>
-                <h4 className="font-semibold text-zinc-200 text-sm">How can I help you today?</h4>
-                <p className="text-xs text-zinc-500 max-w-[280px] mt-1.5 leading-relaxed">
-                  Ask me about room vacancies, today's mess menu, attendance records, visitor entries, or outstanding fees.
+                <h4 className="font-bold text-zinc-100 text-base">
+                  {user?.name ? `Welcome back, ${user.name.split(' ')[0]}!` : 'Welcome to AuraHost!'}
+                </h4>
+                <p className="text-xs text-zinc-400 max-w-[280px] mt-1.5 leading-relaxed">
+                  I'm your intelligent hostel copilot. Ask me questions or select one of the suggested queries below to get started.
                 </p>
               </div>
             </motion.div>
