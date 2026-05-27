@@ -22,8 +22,6 @@ export default function RootLayout({
 }>) {
   return (
     <AIProvider apiKey={process.env.NEXT_PUBLIC_OPENAI_API_KEY || ''}>
-
-  return (
     <html
       lang="en"
       className={`${outfit.variable} h-full antialiased`}
