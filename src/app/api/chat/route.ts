@@ -170,8 +170,10 @@ ${contextText}`;
     let apiUrl = 'https://api.openai.com/v1/chat/completions';
     let modelName = 'gpt-4o-mini';
 
-    // If xAI key is present, direct to xAI API with Grok model
-    if (xAiKey && !openAiKey && !clientApiKey) {
+    // Auto-detect if key is from xAI/Grok (key starts with sk_gSCg... or contains xai, or env xAiKey is active)
+    const isXAi = apiKey.startsWith('sk_gSCg') || apiKey.toLowerCase().includes('xai') || !!xAiKey;
+
+    if (isXAi) {
       apiUrl = 'https://api.x.ai/v1/chat/completions';
       modelName = 'grok-beta';
     }
