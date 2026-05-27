@@ -63,7 +63,11 @@ ${contextText}`;
     // Get API Key from authorization header or env variables
     const authHeader = req.headers.get('Authorization');
     const clientApiKey = authHeader ? authHeader.replace('Bearer ', '').trim() : '';
-    const apiKey = clientApiKey || process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+    
+    // Check multiple env variables: OpenAI, gXAI, or XAI keys
+    const openAiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+    const xAiKey = process.env.gXAI_API_KEY || process.env.XAI_API_KEY;
+    const apiKey = clientApiKey || openAiKey || xAiKey;
 
     if (!apiKey) {
       // -------------------------------------------------------------
@@ -157,15 +161,25 @@ ${contextText}`;
       });
     }
 
-    // Call OpenAI Chat API
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Select base URL and model based on key type
+    let apiUrl = 'https://api.openai.com/v1/chat/completions';
+    let modelName = 'gpt-4o-mini';
+
+    // If xAI key is present, direct to xAI API with Grok model
+    if (xAiKey && !openAiKey && !clientApiKey) {
+      apiUrl = 'https://api.x.ai/v1/chat/completions';
+      modelName = 'grok-beta';
+    }
+
+    // Call Chat completions API
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: modelName,
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages
